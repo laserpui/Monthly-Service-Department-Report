@@ -76,7 +76,8 @@
             -webkit-user-select: none;
         }
     </style>
-    <link id="portal-theme" rel="stylesheet" href="../portal-theme.css?v=3">
+    <link id="portal-theme" rel="stylesheet" href="../portal-theme.css?v=4">
+    <script src="../table-pagination.js"></script>
 </head>
 <body class="text-slate-800 antialiased m-0 p-0 w-full h-full absolute inset-0 overflow-hidden bg-transparent flex flex-col font-sans">
     
@@ -227,6 +228,13 @@
                         <p class="text-xs sm:text-sm text-slate-400 mt-1">ลองเปลี่ยนคำค้นหา หรือคลิก "ล้างวันที่" อีกครั้ง</p>
                     </div>
                 </div>
+                <nav class="table-pagination" id="tablePagination" aria-label="แบ่งหน้าตาราง" hidden>
+                    <span data-page-summary role="status"></span>
+                    <div class="table-pagination-actions">
+                        <button type="button" data-page="previous" aria-controls="tableBody" disabled>ก่อนหน้า</button>
+                        <button type="button" data-page="next" aria-controls="tableBody" disabled>ถัดไป</button>
+                    </div>
+                </nav>
             </div>
         </main>
         
@@ -307,6 +315,10 @@
         const tableWrapper = document.getElementById('tableWrapper');
         const tableHead = document.getElementById('tableHead');
         const tableBody = document.getElementById('tableBody');
+        const pagination = createTablePagination(document.getElementById('tablePagination'), () => {
+            renderRows(currentDisplayedData, currentHeaderOrder);
+            tableWrapper.scrollTop = 0;
+        });
         const noResults = document.getElementById('noResults');
         const rowCountEl = document.getElementById('rowCount');
         const lastUpdatedEl = document.getElementById('lastUpdated');
@@ -337,6 +349,7 @@
         }
 
         async function loadData() {
+            pagination.reset(0);
             statusContainer.classList.remove('hidden');
             loadingIndicator.classList.remove('hidden');
             errorMessage.classList.add('hidden');
@@ -511,7 +524,9 @@
             }
 
             renderHeaders(currentHeaderOrder);
+            pagination.reset(filteredRows.length);
             renderRows(filteredRows, currentHeaderOrder);
+            tableWrapper.scrollTop = 0;
             rowCountEl.textContent = filteredRows.length;
 
             const badgeEl = document.getElementById('statusBadgeText');
@@ -590,7 +605,9 @@
             }
 
             let tbodyHTML = '';
-            dataToRender.forEach((row, rowIndex) => {
+            const start = pagination.offset;
+            dataToRender.slice(start, start + pagination.pageSize).forEach((row, indexOnPage) => {
+                const rowIndex = start + indexOnPage;
                 tbodyHTML += '<tr class="even:bg-slate-50/15 hover:bg-slate-100/35 transition duration-150 group/row border-b border-slate-100/40">';
                 
                 order.forEach((colIndex, i) => {

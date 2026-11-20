@@ -159,3 +159,19 @@
   .portal-service-debtors .search-box input{font-size:1rem}
 }
 @media(hover:none){.portal-service-debtors .stat-card:hover{transform:none}}
+
+.portal-module .table-pagination[hidden]{display:none}
+.portal-module .table-pagination{
+  display:flex;flex:none;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  gap:7px 12px;padding:8px 12px;border-top:1px solid var(--portal-line);
+  background:#ffffffa6;color:var(--portal-muted);font-size:.8rem
+}
+.portal-module .table-pagination-actions{display:flex;gap:6px}
+.portal-module .table-pagination button{
+  min-height:38px;padding:6px 10px;border:1px solid var(--portal-line);border-radius:10px;
+  background:#fff;color:var(--portal-dark);font:inherit;font-weight:700;cursor:pointer
+}
+.portal-module .table-pagination button:hover:not(:disabled){
+  background:var(--portal-pale);border-color:#b9dcd6
+}
+.portal-module .table-pagination button:disabled{opacity:.5;cursor:default}
