@@ -1,0 +1,1978 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="แดชบอร์ดและระบบติดตามงานซ่อมสำหรับแผนกบริการ">
+  <meta name="theme-color" content="#edfafa">
+  <title>Service Repair Tracking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+*{box-sizing:border-box}
+:root{color-scheme:light;--ink:#172841;--muted:#586980;--line:#dce6eb;--teal:#087a76;--teal-dark:#076761;--panel:rgba(255,255,255,.71);--shadow:0 8px 30px rgba(31,62,81,.055);font-family:"Noto Sans Thai",Tahoma,sans-serif;font-size:16px}
+body{margin:0;min-height:100vh;color:var(--ink);background:radial-gradient(ellipse at 26% 2%,#e5ffff,transparent 55%),linear-gradient(128deg,#e5ffff 0%,#ffffe6 53%,#ffe6ff 100%);background-attachment:fixed}
+button,input,select,textarea{font:inherit;color:inherit}
+button,a,input,select,textarea{transition:background .18s,border-color .18s,color .18s,box-shadow .18s,transform .18s}
+button,a{touch-action:manipulation}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:3px solid #168e89;outline-offset:3px}
+svg{width:19px;height:19px;vertical-align:middle;flex:none}
+[data-icon]{display:inline-grid;place-items:center;flex:none}
+h1,h2,h3,p{margin:0}
+small{color:var(--muted)}
+[hidden]{display:none!important}
+.sidebar{width:226px;position:fixed;inset:0 auto 0 0;display:flex;flex-direction:column;padding:30px 17px 19px;background:rgba(251,255,255,.79);border-right:1px solid rgba(134,172,181,.22);backdrop-filter:blur(20px);z-index:3}
+.brand{display:flex;align-items:center;gap:11px;margin:0 5px 49px;line-height:1.27}
+.brand strong{font-size:1.02rem;font-weight:800;display:block;white-space:nowrap}
+.brand small{font-size:.625rem;letter-spacing:.135em;font-weight:800;color:#607588}
+.brand-mark{width:38px;height:38px;border-radius:12px;background:#087e78;color:#fff;box-shadow:0 4px 10px #087e7830}
+.brand-mark svg{width:21px;height:21px}
+.nav-label{font-size:.74rem;color:#627486;font-weight:700;padding:0 12px 9px}
+nav a{display:flex;align-items:center;gap:11px;padding:12px 12px;margin-bottom:5px;border-radius:11px;font-size:.89rem;font-weight:700;color:#4b6076;border:1px solid transparent}
+nav a:hover,nav a[aria-current="page"]{background:#dcf4ef;color:#086e69;border-color:#ccece6}
+.repair-links{display:contents}
+.side-footer{margin-top:auto;border-top:1px solid var(--line);padding:17px 2px 0;display:flex;gap:10px;align-items:center;font-size:.86rem}
+.side-footer small{display:block;font-size:.75rem}
+.avatar{width:36px;height:36px;border-radius:50%;background:#e5f1f6;color:#3d6177}
+.workspace{margin-left:226px;min-width:0}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:62px;background:#ffffff62;border-bottom:1px solid #d4e7e9a0}
+.breadcrumb{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:.83rem}
+.breadcrumb strong{color:var(--ink)}
+.breadcrumb svg{width:13px}
+.demo,.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:.79rem;font-weight:700;line-height:1.5;background:var(--status-bg,#eaf2f7);color:var(--status-fg,#355970);white-space:normal}
+.status-pending-inspection{--status-bg:#dfebff;--status-fg:#214e9f}
+.status-inspecting{--status-bg:#d4f3fb;--status-fg:#07596d}
+.status-repairing{--status-bg:#eae0ff;--status-fg:#55339b}
+.status-waiting-parts{--status-bg:#ffe5cf;--status-fg:#914014}
+.status-waiting-factory{--status-bg:#fce0f2;--status-fg:#862263}
+.status-waiting-customer-approval{--status-bg:#fff0bc;--status-fg:#735000}
+.status-waiting-test{--status-bg:#eef5cd;--status-fg:#455b11}
+.status-repair-failed{--status-bg:#ffdee0;--status-fg:#a01e37}
+.status-repair-completed{--status-bg:#d9f4d8;--status-fg:#26632b}
+.status-waiting-return{--status-bg:#d6f5ef;--status-fg:#006259}
+.status-closed{--status-bg:#e5e9f1;--status-fg:#455366}
+.demo{background:#fffdf3;color:#796129;border:1px solid #eee4be;white-space:nowrap}
+.demo i,.key i,.badge i{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+main{max-width:1640px;margin:auto;padding:27px 32px 34px}
+.hero,.section-head,.toolbar,.dialog-head,.pagination,.actions{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.hero{margin-bottom:23px;align-items:flex-end}
+.eyebrow{color:var(--teal-dark);font-weight:800;font-size:.71rem;letter-spacing:.12em;margin-bottom:5px}
+h1{font-size:clamp(1.65rem,3vw,2.3rem);font-weight:800;letter-spacing:-.035em;line-height:1.25}
+.subtitle{color:var(--muted);margin-top:6px;font-size:.91rem}
+h2{font-size:1.09rem;font-weight:800}
+h3{font-size:.98rem}
+.segment{display:flex;align-items:stretch;gap:3px;padding:4px;background:#ffffff9c;border:1px solid #dfe9eb;border-radius:12px;flex-wrap:wrap}
+.segment button{border:0;background:none;color:var(--muted);border-radius:8px;padding:7px 11px;font-size:.83rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.segment button[aria-pressed="true"]{background:#fff;color:var(--teal-dark);box-shadow:0 1px 6px #2449571b}
+.segment button:hover{color:var(--teal-dark);background:#f2fbf9}
+.panel,.metric{background:var(--panel);border:1px solid #fff;border-radius:24px;box-shadow:var(--shadow);backdrop-filter:blur(18px)}
+.dashboard-overview{display:grid;grid-template-columns:minmax(320px,.85fr) minmax(0,1.4fr);gap:16px;margin-bottom:16px}
+.dashboard-status,.dashboard-follow{margin-bottom:16px}
+.status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px}
+.status-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;text-align:left;padding:12px;border:1px solid var(--line);border-radius:12px;background:#ffffff9c;color:var(--ink);font-weight:700;transition:background .18s,border-color .18s}
+.status-card:hover,.status-card:focus-visible{background:var(--status-bg,#ecfaf7);border-color:var(--status-fg,#85cdc3)}
+.status-card strong{font-size:1.1rem;color:var(--status-fg,#00786e)}
+.status-track{grid-column:1/-1;height:5px;border-radius:9px;background:var(--status-bg,#e4edf0);overflow:hidden}
+.status-track span{display:block;height:100%;border-radius:inherit;background:var(--status-fg,#2b9c90)}
+.dashboard-summary{display:flex;flex-direction:column}
+.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;flex:1;gap:10px}
+.metric{padding:13px 14px;text-align:left;min-width:0;color:var(--ink);border-color:#e4edf0;border-radius:15px;box-shadow:none}
+.dashboard-overview .chart{--plot:158px}
+.dashboard-follow .case-list{grid-template-columns:repeat(3,minmax(0,1fr))}
+.dashboard-follow .section-head{flex-wrap:wrap}
+.metric:hover,.case:hover{transform:translateY(-2px);box-shadow:0 8px 22px #23445616}
+.metric-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.metric-label{color:#4a6076;font-size:.87rem;font-weight:700}
+.tile-icon{display:inline-grid;place-items:center;width:35px;height:35px;border-radius:10px;flex:none}
+.teal{background:#daf5ec;color:#08766b}.blue{background:#e3efff;color:#2b5cb0}.amber{background:#fff1d8;color:#895600}.rose{background:#ffe7ed;color:#b12f52}.purple{background:#eee9ff;color:#6547a2}.neutral{background:#eaf0f5;color:#526578}
+.metric-value{display:flex;align-items:baseline;gap:7px;line-height:1.18;margin:6px 0}
+.metric-value strong{font-size:1.9rem;font-weight:800;letter-spacing:-.035em}
+.metric-value span,.metric small{font-size:.77rem;color:var(--muted)}
+.panel{padding:18px 20px;min-width:0}
+.panel:hover{border-color:#e1eceb}
+.section-head{align-items:flex-start;margin-bottom:12px}
+.section-head p{color:var(--muted);font-size:.79rem;margin-top:3px}
+.icon-title{display:flex;align-items:center;gap:8px}
+.icon-title svg{color:var(--teal)}
+.button,.icon-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid #d8e5e9;border-radius:10px;background:#fff;padding:8px 12px;font-size:.85rem;font-weight:700;min-height:38px}
+.button:hover,.icon-button:hover{background:#e9f7f4;border-color:#b8dcd6}
+.button.primary{background:#087b75;color:#fff;border-color:#087b75}
+.button.primary:hover{background:#086862}
+.button.compact{padding:5px 9px;min-height:32px;font-size:.77rem}
+.icon-button{width:38px;padding:0}
+.chart-summary{display:flex;flex-wrap:wrap;gap:10px 23px;margin:8px 0 12px}
+.chart-summary div{display:grid;gap:1px}
+.chart-summary small{font-size:.74rem}
+.chart-summary b{font-size:1.18rem;line-height:1.25;font-variant-numeric:tabular-nums}
+.chart-summary .delta{color:var(--teal-dark)}
+.chart-scroll,.table-scroll{overflow:auto;max-width:100%;scrollbar-color:#b9ced2 transparent}
+.chart{display:grid;grid-template-columns:27px 1fr;min-width:max(400px,calc(var(--months) * 32px + 27px));--plot:119px}
+.axis,.plot{height:var(--plot)}
+.axis{position:relative;color:#65788d;font-size:.70rem}
+.axis span{position:absolute;right:6px;transform:translateY(-50%)}
+.plot{display:grid;grid-template-columns:repeat(var(--months),minmax(25px,1fr));gap:4px;position:relative;background:repeating-linear-gradient(to top,#d9e5e8 0 1px,transparent 1px 25%)}
+.plot button{position:relative;border:0;background:none;display:grid;justify-items:center;align-items:end;padding:0 2px;min-width:0;isolation:isolate}
+.plot button:hover,.plot button:focus-visible{background:#d7efed8a;border-radius:6px}
+.plot button .bar{width:min(26px,85%);height:max(2px,var(--bar));display:flex;flex-direction:column-reverse;overflow:hidden;border-radius:5px 5px 1px 1px;background:#dbe8ed}
+.bar span:first-child,.key .house{background:#16998e}.bar span:nth-child(2),.key .site{background:#a49ae9}
+.plot small{position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:.66rem;padding-top:4px}
+.chart-scroll{padding-bottom:24px;padding-top:7px}
+.keys{display:flex;justify-content:center;gap:16px;margin-top:3px}
+.key{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.75rem}
+.key i{border-radius:3px;width:9px;height:9px}
+.case-list{display:grid;gap:8px}
+.case{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;text-align:left;width:100%;padding:9px 8px;border:1px solid #e4ecef;border-radius:12px;background:#ffffff91}
+.case strong,.case small{display:block;overflow-wrap:anywhere}
+.case strong{font-size:.84rem}.case small{font-size:.76rem}
+.case-count{color:#9c3150;font-size:.72rem;font-weight:800;text-align:right}
+.case .tile-icon{width:31px;height:31px}
+.text-button{font:inherit;font-weight:800;color:var(--teal-dark);border:0;background:transparent;padding:2px 0;text-align:left}
+.text-button:hover{text-decoration:underline}
+.table-panel{padding-bottom:11px}
+.table-panel .section-head{margin-bottom:10px}
+.toolbar{flex-wrap:wrap;margin-bottom:11px;justify-content:flex-start}
+.toolbar .grow{flex:1;min-width:185px;max-width:370px}
+.repair-toolbar{gap:8px}
+.repair-toolbar .grow{min-width:min(100%,245px);max-width:440px}
+.repair-toolbar select{max-width:100%}
+.repair-date-filter legend{margin-bottom:5px}
+.repair-date-heading{display:inline-flex;align-items:center;gap:7px;color:var(--teal-dark);font-weight:700;font-size:.85rem}
+.repair-date-heading svg{width:16px;height:16px}
+.repair-date-fields{display:flex;flex-wrap:wrap;gap:8px}
+.repair-date-fields .field{flex:1 1 132px;max-width:200px;min-width:0}
+.repair-filter-layout{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 20px;margin-bottom:12px}
+.repair-filter-layout .repair-toolbar{flex:1 1 610px;max-width:820px;margin:0}
+.repair-filter-layout .repair-date-filter{flex:1 1 350px}
+.repair-date-fields{align-items:flex-end}
+.filter-reset{white-space:nowrap}
+#date-range-error{margin-top:6px}
+.search{display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #dbe6eb;border-radius:10px;background:#ffffffba;color:var(--muted)}
+.search:focus-within{border-color:#129a8a}
+.search input{border:0;outline:0;background:none;width:100%;padding:8px 0;font-size:.86rem;min-width:0}
+select,input:not(.search input,[type=checkbox]),textarea{border:1px solid #d9e5eb;background:#ffffffc9;border-radius:9px;min-width:0;max-width:100%;padding:8px 10px;font-size:.86rem}
+select{appearance:none;padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23576980' stroke-width='1.5'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");background-position:right 8px center;background-repeat:no-repeat;background-size:14px}
+.table-scroll{margin:0 -6px}
+table{width:100%;border-collapse:collapse;text-align:left;font-size:.82rem;white-space:nowrap}
+th,td{padding:10px 9px;border-bottom:1px solid #e5eef0}
+th{color:#52647b;background:#edf5f7a8;font-size:.75rem;font-weight:800}
+tbody tr[data-open]{cursor:pointer}
+tbody tr:hover{background:#e7f7f37a}
+td .badge{font-size:.74rem}
+.serial{color:var(--teal-dark);font-weight:800}
+.pagination{margin-top:8px;font-size:.8rem;color:var(--muted)}
+.pagination button:disabled{opacity:.4;cursor:default}
+.form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.field{display:grid;gap:5px;min-width:0;font-size:.85rem;font-weight:700}
+.field input,.field select,.field textarea{width:100%}
+.field em{color:#af2950;font-style:normal}
+.field.span{grid-column:1/-1}
+.flags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:9px}
+.flags button[aria-pressed="true"]{background:#dcf4ef;color:var(--teal-dark);border-color:#abdcd2}
+.empty{padding:23px;text-align:center;color:var(--muted);font-size:.89rem;white-space:normal}
+dialog{width:min(780px,calc(100% - 24px));max-height:calc(100dvh - 28px);overflow:auto;border:1px solid #fff;border-radius:24px;padding:0;color:var(--ink);background:#f7fcfc;box-shadow:0 22px 80px #16334b40}
+dialog[open]{animation:enter .2s ease-out}
+dialog::backdrop{background:#23364d51;backdrop-filter:blur(5px)}
+@keyframes enter{from{opacity:0;transform:translateY(7px) scale(.985)}to{opacity:1;transform:none}}
+.dialog-head{position:sticky;top:0;z-index:1;background:#f7fcfc;padding:17px 21px;border-bottom:1px solid var(--line)}
+#dialog-body{padding:18px 21px}
+.detail-section{margin-top:18px}
+.detail-section h3{margin-bottom:8px}
+.detail-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 13px;margin:14px 0;font-size:.86rem}
+.detail-meta div,.record{background:#fff;border:1px solid #e1ebee;border-radius:10px;padding:9px 11px;overflow-wrap:anywhere}
+.detail-meta small{display:block;font-size:.75rem}
+.record{margin:6px 0;font-size:.84rem}
+.record p{color:var(--muted);margin-top:3px;white-space:pre-wrap}
+.record a{color:var(--teal-dark);text-decoration:underline;overflow-wrap:anywhere}
+.admin-nav{margin-bottom:17px;width:fit-content}
+.admin-panel{max-width:1080px}
+fieldset{min-inline-size:0;border:0;margin:0;padding:0}
+fieldset+fieldset{border-top:1px solid var(--line);margin-top:19px;padding-top:15px}
+legend{font-weight:800;padding:0;margin-bottom:10px}
+.actions{justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+.error{color:#a12446;font-size:.88rem;margin-top:8px}
+.toast{position:fixed;right:18px;bottom:18px;z-index:5;padding:12px 17px;border-radius:12px;background:#155d57;color:white;box-shadow:var(--shadow);max-width:calc(100% - 36px)}
+@media(max-width:1150px){.sidebar{width:188px}.workspace{margin-left:188px}main,.topbar{padding-inline:22px}}
+@media(max-width:1080px){.dashboard-overview{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:850px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-follow .case-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:580px){.dashboard-follow .case-list{grid-template-columns:1fr}.dashboard-overview .chart{--plot:132px}}
+@media(max-width:720px){.sidebar{position:sticky;inset:0 0 auto;width:auto;padding:8px 12px;flex-direction:row;align-items:center;justify-content:space-between;gap:7px;border-right:0;border-bottom:1px solid var(--line)}.brand{margin:0;gap:7px}.brand strong{font-size:.86rem}.brand small{font-size:.51rem}.brand-mark{width:31px;height:31px;border-radius:9px}.sidebar nav{display:flex;gap:3px}.sidebar nav a{padding:7px;font-size:.74rem;gap:4px;margin:0}.sidebar nav svg{width:15px;height:15px}.side-footer,.nav-label{display:none}.workspace{margin-left:0}.topbar{height:49px}.hero{align-items:flex-start;flex-direction:column;margin-bottom:15px}.hero,.section-head{gap:9px}main,.topbar{padding-inline:13px}main{padding-top:18px}.form-grid,.detail-meta{grid-template-columns:repeat(2,minmax(0,1fr))}.panel{padding:14px}.metrics,.dashboard-overview{gap:9px}.dashboard-overview{margin-bottom:10px}}
+@media(max-width:430px){.brand small{display:none}.metric{padding:11px}.metric-label{font-size:.76rem}.metric small{font-size:.72rem}.tile-icon{width:29px;height:29px}.tile-icon svg{width:16px;height:16px}.case-list,.form-grid{grid-template-columns:1fr}.chart-summary{gap:8px 15px}.section-head{flex-wrap:wrap}.pagination{flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+.section-head > .badge{flex:none}
+@media(max-width:360px){
+  .sidebar{padding-inline:8px}
+  .sidebar nav a{padding-inline:6px}
+  .sidebar nav a [data-icon]{display:none}
+}
+@media(max-width:720px){
+  .sidebar{display:grid;grid-template-columns:minmax(0,1fr) auto auto}
+  .sidebar nav{display:contents}
+  .sidebar [data-route="dashboard"]{grid-area:1/2}
+  .sidebar [data-route="admin"]{grid-area:1/3}
+  .repair-links{grid-row:2;grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+  .sidebar .repair-links a{justify-content:center;min-height:36px;margin:0;padding:4px;text-align:center}
+}
+.quote-upload{border:1px dashed #b9d9d6;border-radius:14px;background:#f5fbfa;padding:12px;margin-top:16px}
+.quote-upload input{display:block;width:min(100%,420px);margin-top:5px}
+.quote-upload input::file-selector-button{border:0;border-radius:6px;padding:4px 8px;margin-inline-end:8px;background:#dcf4ef;color:#076761;font-weight:700;cursor:pointer}
+.quote-image-status,.quote-upload .error{font-size:.84rem;overflow-wrap:anywhere;margin-top:5px}
+.quote-image-status:empty{display:none}
+.quote-image-preview img{display:block;max-width:100%;height:auto;border:1px solid var(--line);border-radius:8px;background:#fff;margin:8px 0}
+.quote-image-preview img{max-height:220px;object-fit:contain}
+
+.data-actions,.detail-heading{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.detail-heading{justify-content:space-between;gap:10px;margin-bottom:8px}
+.detail-heading h3,.detail-heading .flags{margin:0}
+.data-actions svg,.detail-heading svg,.quote-image-trigger svg{width:15px;height:15px}
+
+.quote-image-trigger,.quote-folder{margin-top:8px}
+.quote-folder small{font-size:.8rem;overflow-wrap:anywhere}
+.clipboard-field{position:fixed;left:0;top:0;opacity:0;pointer-events:none}
+.row-copy,.meta-item,.copyable-item{display:flex;align-items:center;gap:8px}
+.meta-item,.copyable-item{justify-content:space-between;align-items:flex-start}
+.meta-item>span,.copy-content{min-width:0}
+.copy-item{flex:none}
+.button.copy-item-icon{width:30px;padding:0;min-height:30px}
+.copy-item svg{width:15px;height:15px}
+.chart-data-actions{text-align:right;margin-top:7px}
+td.quote-note{min-width:10rem;max-width:20rem;white-space:normal;overflow-wrap:anywhere}
+td .quote-image-trigger{margin-top:0}
+.job-search{max-width:740px}
+.job-search input[type="search"]{min-height:41px}
+.job-results{grid-template-columns:1fr;max-height:21rem;overflow:auto;padding:4px;margin:4px -4px}
+.job-results .case:hover{transform:none;border-color:#b6dcd6;background:#f1fbf9}
+.job-current{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px;margin-bottom:15px;border:1px solid var(--line);border-radius:12px;background:#ffffff91}
+.job-current>div:first-child{flex:1 1 200px;min-width:0;overflow-wrap:anywhere}
+.job-current .subtitle{margin-top:2px}
+@media(max-width:430px){.job-results .case{grid-template-columns:minmax(0,1fr) auto}.job-results .tile-icon{display:none}}
+.quote-number-trigger,.quote-number-form{margin-top:8px}
+.record .quote-number-trigger{margin-inline-start:6px}
+@media(max-width:430px){.record .quote-number-trigger{margin-inline-start:0;display:flex;width:fit-content}}
+.live-status .button{margin-top:14px}
+
+</style>
+</head>
+<body data-live-database="true">
+  <aside class="sidebar">
+    <a class="brand" href="#dashboard"><span class="brand-mark" data-icon="wrench"></span><span><strong>Service Repair</strong><small>TRACKING SYSTEM</small></span></a>
+    <nav aria-label="เมนูหลัก">
+      <div class="nav-label">พื้นที่ทำงาน</div>
+      <a href="#dashboard" data-route="dashboard"><span data-icon="layout"></span> Dashboard</a>
+      <div class="repair-links">
+        <a href="#repairs" data-route="repairs"><span data-icon="list"></span> งานรอตรวจสอบ</a>
+        <a href="#in-progress" data-route="in-progress"><span data-icon="wrench"></span> อยู่ระหว่างซ่อม</a>
+        <a href="#quotations" data-route="quotations"><span data-icon="receipt"></span> เสนอราคา</a>
+      </div>
+      <a href="#admin" data-route="admin"><span data-icon="settings"></span> Admin</a>
+    </nav>
+    <div class="side-footer"><span class="avatar" data-icon="user"></span><span><strong>แผนกบริการ</strong><small>พื้นที่สาธิต</small></span></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar">
+      <div class="breadcrumb"><span>แผนกบริการ</span><span data-icon="chevron"></span><strong id="breadcrumb">Dashboard</strong></div>
+      <div class="data-actions"><span id="source-status" class="demo"><i></i> ข้อมูลจำลอง</span>
+        <button id="refresh-db" class="button compact" data-action="reload-live-data" hidden>โหลดข้อมูลใหม่</button></div>
+    </header>
+    <main id="app"></main>
+  </div>
+  <dialog id="dialog" aria-labelledby="dialog-title">
+    <div class="dialog-head"><div><p class="eyebrow" id="dialog-kicker"></p><h2 id="dialog-title"></h2></div><button type="button" class="icon-button" id="dialog-close" aria-label="ปิด"><span data-icon="x"></span></button></div>
+    <div id="dialog-body"></div>
+  </dialog>
+  <div class="toast" id="toast" role="status" hidden></div>
+<script>
+"use strict";
+
+const RepairData = (() => {
+  const statuses = {
+    PENDING_INSPECTION: "รอตรวจสอบ", INSPECTING: "กำลังตรวจสอบ", REPAIRING: "กำลังซ่อม",
+    WAITING_PARTS: "รออะไหล่", WAITING_FACTORY: "รอโรงงานตอบกลับ", WAITING_CUSTOMER_APPROVAL: "รอลูกค้าอนุมัติ",
+    WAITING_TEST: "รอทดสอบ", REPAIR_FAILED: "ซ่อมไม่สำเร็จ", REPAIR_COMPLETED: "ซ่อมเสร็จ",
+    WAITING_RETURN: "รอส่งคืนลูกค้า", CLOSED: "ปิดงาน"
+  };
+  const types = { IN_HOUSE: "In-House", ON_SITE: "On-Site" };
+  const locations = { ...types, FACTORY: "โรงงาน", OTHER: "อื่น ๆ" };
+  const priorities = { CRITICAL: "วิกฤต", HIGH: "สูง", MEDIUM: "ปานกลาง", LOW: "ต่ำ" };
+  const tests = { PASS: "ผ่าน", FAIL: "ไม่ผ่าน", INCONCLUSIVE: "ยังสรุปไม่ได้" };
+  const reasons = ["ยังไม่พบสาเหตุที่แท้จริง", "เปลี่ยนอะไหล่แล้วปัญหายังคงอยู่", "ปัญหาเกิดขึ้นเป็นบางครั้ง", "ต้องได้รับคำแนะนำจากโรงงาน", "ไม่มีอะไหล่สำหรับทดสอบ", "อื่น ๆ"];
+  const customers = Object.fromEntries(["เอเวอร์โกลว์ คลินิก", "เดอะสกิน สตูดิโอ", "เวลลิส เมดิคอล", "ไพรม์ แอสเธติก", "ลูมิน่า คลินิก", "ออรา เวลเนส", "ไบรท์เดย์ คลินิก", "เมอริเดียน สกิน"].map((name, index) => ["CUS-" + (index + 1), name]));
+  const engineers = { "TEC-1": "ธีรภัทร", "TEC-2": "ธนวัฒน์", "TEC-3": "พีรพล", "TEC-4": "ณัฐวุฒิ" };
+  const serviceEngineers = {
+    "TEC-STAFF-01":"ประวิทย์", "TEC-STAFF-02":"เอกเลิศ", "TEC-STAFF-03":"สมชาย", "TEC-STAFF-04":"อภิลักษณ์",
+    "TEC-STAFF-05":"ธนาธิป", "TEC-STAFF-06":"พงษ์ศักดิ์", "TEC-STAFF-07":"ธนบูรณ์", "TEC-STAFF-08":"จีรศักดิ์",
+    "TEC-STAFF-09":"ชาติชาย", "TEC-STAFF-10":"กันต์ศักดิ์", "TEC-STAFF-11":"ณัฐพงษ์", "TEC-STAFF-12":"กษิเดช",
+    "TEC-STAFF-13":"ภัควัฒน์", "TEC-STAFF-OTHER":"อื่นๆ"
+  };
+  const modelsByBrand = {
+    Fotona:["SP Dynamis Nx","SP Dynamis","XP Dynamis","XS Dynamis","SP Spectro","XP Focus","StarWalker MaQX","StarWalker PQX","StarWalker Pico Pro","TimeWalker","StarFormer","AvalancheLase","LightWalker","SkyPulse","อื่นๆ"],
+    Jeisys:["IntraGen","AcGen","Cellec","Cellec V","Density","LinearZ","Edge One","UltraCel Q+","อื่นๆ"],
+    Solta:["Vaser 2.2","Power X","อื่นๆ"],
+    Elesys:["1000Nain","อื่นๆ"],
+    Hypertech:["Biaxis QS","Biaxis GV","Biaxis Pico","อื่นๆ"],
+    BlueCore:["IRIS","Trinity","อื่นๆ"],
+    "Dae Yang":["CM Slim","WinBack","Aquatouch","Therma B","อื่นๆ"],
+    Lutronic:["Pico Plus","Spectra XT","Spectra","eCo2 Plus","Healite II","Mosaic","อื่นๆ"],
+    DAEJU:["Pentagon G-Slim","อื่นๆ"],
+    SHEnB:["VirtueRF","อื่นๆ"],
+    Brera:["Jovena","อื่นๆ"],
+    "อื่นๆ":["อื่นๆ"]
+  };
+  const normalizeName = value => String(value ?? "").trim().normalize("NFC");
+  function addServiceEngineers(directory) {
+    const merged = { ...directory };
+    const names = new Set(Object.values(merged).map(normalizeName));
+    for (const [id,name] of Object.entries(serviceEngineers)) {
+      if (!Object.hasOwn(merged,id) && !names.has(normalizeName(name))) merged[id] = name;
+    }
+    return merged;
+  }
+  const machineNames = [["Candela", "GentleMax Pro"], ["Lutronic", "Clarity II"], ["Cynosure", "PicoSure"], ["Alma", "Soprano ICE"], ["Cutera", "excel HR"], ["Fotona", "SP Dynamis"], ["Lumenis", "M22"], ["Quanta", "Discovery Pico"]];
+  const machines = machineNames.map(([brand, model], index) => ({ machine_id: "MCH-" + (index + 1), customer_id: "CUS-" + (index + 1), brand, model, serial_number: ["GMP-05281","CL2-10472","PS-30812","SI-70611","EXH-54780","SPD-01069","M22-76523","DP-80619"][index] }));
+  const dayFormat = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok", year: "numeric", month: "2-digit", day: "2-digit" });
+  const bangkokDay = (value = new Date()) => {
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+    const parts = Object.fromEntries(dayFormat.formatToParts(new Date(value)).map(part => [part.type, part.value]));
+    return [parts.year, parts.month, parts.day].join("-");
+  };
+  const today = bangkokDay();
+  const month = today.slice(0, 7);
+  const shiftMonth = (key, offset) => {
+    const [year, number] = key.split("-").map(Number);
+    return new Date(Date.UTC(year, number - 1 + offset, 1)).toISOString().slice(0, 7);
+  };
+  const shiftDay = offset => new Date(Date.parse(today) + offset * 86400000).toISOString().slice(0, 10);
+  const closedDay = repair => {
+    if (repair.status !== "CLOSED") return "";
+    const date = repair.repair_completed_at || repair.closed_at;
+    return date ? bangkokDay(date) : "";
+  };
+  const age = repair => Math.max(0, Math.round((Date.parse(closedDay(repair) || today) - Date.parse(bangkokDay(repair.reported_at))) / 86400000));
+  const overdue = repair => repair.status !== "CLOSED" && !!repair.due_date && bangkokDay(repair.due_date) < today;
+  const failed = repair => repair.attempts.filter(attempt => attempt.test_result === "FAIL").length;
+  const active = repair => repair.status !== "CLOSED";
+  const search = (repair, query, directory = { customers, engineers }) => [repair.srn, repair.repair_id, repair.machine_id, repair.serial_number, directory.customers[repair.customer_id], repair.brand, repair.model, directory.engineers[repair.assigned_engineer_id]]
+    .some(value => String(value || "").toLowerCase().includes(query.trim().toLowerCase()));
+  const byMonth = (repairs, target, type = "") => Array.from(new Map(repairs.filter(repair => bangkokDay(repair.reported_at).slice(0, 7) === target && bangkokDay(repair.reported_at) <= today && (!type || repair.initial_service_type === type)).map(repair => [repair.repair_id, repair])).values());
+  function monthly(repairs, start, end, type = "") {
+    const months = [];
+    for (let key = start; key <= end; key = shiftMonth(key, 1)) {
+      const records = byMonth(repairs, key, type);
+      const in_house = records.filter(repair => repair.initial_service_type === "IN_HOUSE").length;
+      const on_site = records.filter(repair => repair.initial_service_type === "ON_SITE").length;
+      months.push({ month: key, in_house, on_site, total: in_house + on_site, invalid: records.length - in_house - on_site });
+    }
+    return months;
+  }
+  const id = () => globalThis.crypto?.randomUUID?.() || Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+  const history = (event_type, note, old_value = "", new_value = "", at = new Date().toISOString(), actor = "Admin Demo") =>
+    ({ event_id: id(), occurred_at: at, actor, event_type, old_value, new_value, note });
+
+  function seed() {
+    const issues = ["พลังงานเลเซอร์ไม่คงที่หลังอุ่นเครื่อง", "ระบบทำความเย็นแสดงข้อผิดพลาด", "เครื่องหยุดทำงานระหว่างยิงทดสอบ", "หัวทรีตเมนต์ตรวจไม่พบ", "หน้าจอค้างระหว่างเริ่มระบบ", "ต้องตรวจสอบการรั่วในวงจรน้ำ"];
+    const liveStatuses = ["WAITING_PARTS","WAITING_FACTORY","REPAIR_FAILED","REPAIRING","WAITING_CUSTOMER_APPROVAL","WAITING_TEST","INSPECTING","PENDING_INSPECTION","REPAIR_COMPLETED","WAITING_RETURN"];
+    const volumes = [11,14,0,10,16,13,18,15,20,17,25,19];
+    const repairs = [];
+    for (let offset = 0; offset < volumes.length; offset++) {
+      const key = shiftMonth(month, offset - 11);
+      for (let index = 0; index < volumes[offset]; index++) {
+        const number = repairs.length + 1;
+        const machine = machines[(number - 1) % machines.length];
+        const opening = number % 3 === 0 ? "ON_SITE" : "IN_HOUSE";
+        const isCurrent = offset === 11;
+        const isLive = isCurrent || (offset === 10 && index < 5);
+        const reported_at = key + "-" + String(1 + index % (isCurrent ? Number(today.slice(-2)) : 26)).padStart(2, "0");
+        const status = isLive ? liveStatuses[index % liveStatuses.length] : "CLOSED";
+        const lastUpdate = isLive ? shiftDay(-Math.min(Math.max(0, Math.floor((Date.parse(today) - Date.parse(reported_at)) / 86400000)), index % 6)) : reported_at;
+        const repeated = isCurrent && index < 3 ? 5 - index : 0;
+        const attempts = Array.from({ length: repeated }, (_, attempt) => ({
+          attempt_id: "ATT-" + number + "-" + attempt, attempt_no: attempt + 1, attempt_at: lastUpdate, test_result: "FAIL",
+          engineer_id: "TEC-" + (number % 4 + 1), location_type: "IN_HOUSE", actions_taken: ["ตรวจสอบระบบควบคุมและบันทึกผล", "ทดสอบวงจรและเปรียบเทียบค่ามาตรฐาน", "ทำการทดสอบซ้ำหลังปรับตั้ง"][attempt % 3], failure_reason: reasons[attempt % 3]
+        }));
+        repairs.push({
+          ...machine, repair_id: "REP-" + key.slice(0, 4) + "-" + String(number).padStart(5, "0"), srn: "SRN-" + key.slice(2, 4) + "-" + String(1040 + number).padStart(4, "0"),
+          initial_service_type: opening, current_location_type: isCurrent && index === 2 ? "IN_HOUSE" : opening, reported_at, status,
+          assigned_engineer_id: "TEC-" + (number % 4 + 1), priority: repeated ? "HIGH" : "MEDIUM",
+          updated_at: lastUpdate, due_date: isLive ? shiftDay(index % 3 === 0 ? -2 : 7 + index) : "",
+          issue_description: issues[index % issues.length], hold_reason: index === 0 && isLive ? "รออะไหล่จากผู้จัดจำหน่าย" : "",
+          next_action: isLive ? "ยืนยันผลทดสอบและแจ้งความคืบหน้า" : "",
+          closed_at: isLive ? "" : reported_at, final_outcome: isLive ? "" : "ซ่อมสำเร็จ",
+          close_note: isLive ? "" : "ทดสอบเครื่องก่อนส่งคืนแล้ว", test_result: isLive ? "" : "PASS",
+          attempts, visits: opening === "ON_SITE" ? [{ visit_id: "VIS-" + number, scheduled_visit_at: reported_at, site_location: customers[machine.customer_id], visit_engineer_id: "TEC-" + (number % 4 + 1), visit_findings: "ตรวจสอบเบื้องต้นที่หน้างาน" }] : [],
+          parts: isLive && index === 0 ? [{ part_number: "SP-DEMO-01", part_name: "ชุดควบคุมระบบทำความเย็น", quantity: 1, part_status: "รอส่ง", eta_at: shiftDay(5) }] : [],
+          quotes: [],
+          history: [history("เปิดงาน", "รับแจ้งซ่อม", "", "PENDING_INSPECTION", reported_at, "ทีมรับแจ้ง (Demo)"), ...(status === "PENDING_INSPECTION" ? [] : [history(status === "CLOSED" ? "ปิดงาน" : "เปลี่ยนสถานะ", isLive ? "บันทึกความคืบหน้า" : "ส่งมอบงานแล้ว", "PENDING_INSPECTION", status, lastUpdate, "ทีมบริการ (Demo)")])]
+        });
+      }
+    }
+    return { version: 1, repairs, settings: { watch: 2, repeated: 3, manager: 4, critical: 5 }, machines, customers, engineers:addServiceEngineers(engineers), statuses: { ...statuses } };
+  }
+
+  const storageKey = "service-repair-tracking-demo:v1";
+  function load() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey));
+      if (saved?.version === 1 && Array.isArray(saved.repairs)) {
+        return { ...saved, engineers:addServiceEngineers(saved.engineers || engineers) };
+      }
+    } catch { /* Use fixtures if browser storage is unavailable. */ }
+    return seed();
+  }
+  function save(state) {
+    localStorage.setItem(storageKey, JSON.stringify(state));
+  }
+  return { statuses, types, locations, priorities, tests, reasons, modelsByBrand, today, month, bangkokDay, shiftMonth, closedDay, age, overdue, failed, active, search, monthly, byMonth, history, id, seed, load, save };
+})();
+if (typeof module !== "undefined") module.exports = RepairData;
+
+</script>
+<script>
+"use strict";
+
+const R = RepairData;
+let state = document.body.dataset.liveDatabase === "true" ? null : R.load();
+const app = document.querySelector("#app");
+const dialog = document.querySelector("#dialog");
+const dialogBody = document.querySelector("#dialog-body");
+const paths = {
+  wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-7 7a2.1 2.1 0 0 1-3-3l7-7a6 6 0 0 1 7.9-7.9z"/>',
+  layout:'<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
+  settings:'<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2" fill="white"/><circle cx="15" cy="17" r="2" fill="white"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/>',
+  chevron:'<path d="m9 18 6-6-6-6"/>', x:'<path d="m18 6-12 12M6 6l12 12"/>',
+  activity:'<path d="M22 12h-4l-3 8L9 4l-3 8H2"/>',
+  history:'<path d="M3 12a9 9 0 1 1 2.6 6.4M3 12V5m0 7h7m2-5v5l3 2"/>',
+  briefcase:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  hourglass:'<path d="M6 3h12M6 21h12m-11-1v-3l5-5-5-5V4m10 16v-3l-5-5 5-5V4"/>',
+  triangle:'<path d="M10.3 4.5 2.9 18a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 4.5a2 2 0 0 0-3.4 0zM12 9v4m0 4h.01"/>',
+  chart:'<path d="M3 3v18h18M8 16v-3m5 3V8m5 8V5"/>',
+  calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
+  bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
+  list:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8m-8 4h8m-8 4h5"/>',
+  search:'<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/>',
+  filter:'<path d="M4 6h16M7 12h10m-7 6h4"/>',
+  receipt:'<path d="M5 3l2 1.5L9.5 3 12 4.5 14.5 3 17 4.5 19 3v18l-2-1.5-2.5 1.5-2.5-1.5L9.5 21 7 19.5 5 21V3Zm4 6h6m-6 4h6m-6 4h3"/>',
+  copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+  download:'<path d="M12 3v12m-4-4 4 4 4-4M4 16v4h16v-4"/>',
+  image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-6-6L3 21"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  edit:'<path d="m15 5 4 4M4 20l4-.6L20 7l-4-4L4.6 15z"/>',
+  check:'<path d="m5 12 4 4L19 6"/>'
+};
+const icon = name => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (paths[name] || "") + '</svg>';
+const esc = value => String(value ?? "").replace(/[&<>"']/g, character => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[character]);
+const shortDate = new Intl.DateTimeFormat("th-TH-u-ca-gregory", { timeZone:"Asia/Bangkok", year:"numeric", month:"short", day:"numeric" });
+const date = value => value && !isNaN(Date.parse(value)) ? shortDate.format(new Date(value)) : "—";
+const timestamp = value => value?.length > 10 ? date(value) + " " + new Date(value).toLocaleTimeString("th-TH", { timeZone:"Asia/Bangkok", hour:"2-digit", minute:"2-digit" }) : date(value);
+const options = (choices, selected, placeholder = null) => (placeholder === null ? "" : '<option value="">' + esc(placeholder) + '</option>') +
+  Object.entries(choices).map(([key, label]) => '<option value="' + esc(key) + '" ' + (key === selected ? "selected" : "") + '>' + esc(label) + '</option>').join("");
+const activeStatuses = () => Object.fromEntries(Object.entries(state.statuses).filter(([key]) => key !== "CLOSED"));
+const badge = (label, tone = "neutral") => '<span class="badge ' + tone + '"><i></i>' + esc(label) + '</span>';
+const toggle = (name, value, label, selected, symbol) => '<button type="button" data-' + name + '="' + value + '" aria-pressed="' + selected + '">' + icon(symbol) + esc(label) + '</button>';
+const findRepair = id => state.repairs.find(row => row.repair_id === id);
+const assignedEngineerNames = repair => [repair.assigned_engineer_id,repair.secondary_engineer_id]
+  .map(id => state.engineers[id]).filter(Boolean);
+const assignedEngineer = repair => assignedEngineerNames(repair).join(" · ") || "ยังไม่จ่ายงาน";
+const isAdmin = () => location.hash === "#admin";
+
+function render() {
+  if (isLiveDatabase() && !state) return showLiveDatabaseStatus();
+  const section = dashboardSection();
+  const canUseAdmin = !isLiveDatabase() || state.role === "ADMIN";
+  if (isLiveDatabase()) {
+    document.querySelector("#source-status").textContent = "Google Sheets";
+    document.querySelector("#refresh-db").hidden = false;
+    document.querySelector(".side-footer small").textContent = "ข้อมูลจริง";
+  }
+  const route = isAdmin() ? "admin" : section ? location.hash.slice(1) : "dashboard";
+  document.querySelectorAll("[data-route]").forEach(link => {
+    if (link.dataset.route === "admin") link.hidden = !canUseAdmin;
+    if (link.dataset.route === route) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  });
+  document.querySelector("#breadcrumb").textContent = isAdmin() ? "Admin" : section?.title || "Dashboard";
+  app.innerHTML = isAdmin() ? (canUseAdmin ? admin() : '<section class="panel"><h1>บัญชีนี้มีสิทธิ์ดูข้อมูล</h1></section>') : section ? repairIndex(section) : dashboard();
+  if (isAdmin() && canUseAdmin) afterAdmin();
+  else if (!isAdmin()) table();
+}
+
+function openDialog(kicker, title, body) {
+  document.querySelector("#dialog-kicker").textContent = kicker;
+  document.querySelector("#dialog-title").textContent = title;
+  dialogBody.innerHTML = body;
+  if (!dialog.open) dialog.showModal();
+  else document.querySelector("#dialog-close").focus();
+  dialog.scrollTop = 0;
+}
+const meta = items => '<div class="detail-meta">' + items.filter(([,value]) => value !== undefined && value !== "").map(([label,value]) =>
+  '<div class="meta-item"><span><small>' + esc(label) + '</small><strong>' + esc(value) + '</strong></span>' + copyItemButton("คัดลอก" + label,value,true) + '</div>').join("") + '</div>';
+const copyableItem = (html, label) => '<div class="record copyable-item"><div class="copy-content">' + html + '</div>' + copyItemButton(label) + '</div>';
+const records = (title, rows, format) => '<section class="detail-section"><h3>' + esc(title) + '</h3>' +
+  (rows.length ? rows.map((row,index) => copyableItem(format(row),"คัดลอก" + title + " รายการที่ " + (index + 1))).join("") : '<div class="record"><p>ยังไม่มีบันทึก</p></div>') + '</section>';
+const copyableRecord = (title, text, extra = "") => '<section class="detail-section"><h3>' + esc(title) + '</h3>' +
+  copyableItem('<p>' + linkifyText(text) + '</p>' + extra,"คัดลอก" + title) + '</section>';
+const record = (title, detail) => '<strong>' + linkifyText(title) + '</strong><p>' + linkifyText(detail) + '</p>';
+const link = (url, text) => {
+  if (!url) return "";
+  try {
+    const parsed = new URL(url);
+    if (["https:", "http:"].includes(parsed.protocol)) return '<a href="' + esc(parsed.href) + '" target="_blank" rel="noopener noreferrer">' + esc(text) + '</a>';
+  } catch { /* Render invalid URLs as text. */ }
+  return esc(url);
+};
+
+function linkifyText(value) {
+  const text = String(value ?? "");
+  let html = "", cursor = 0;
+  for (const match of text.matchAll(/(^|[\s([{<>"'“‘])((?:https?:\/\/)[^\s<>"'“”‘’]+)/gi)) {
+    const start = match.index + match[1].length;
+    const candidate = match[2];
+    const surplus = { ")":0, "]":0, "}":0 };
+    for (const character of candidate) {
+      if (Object.hasOwn(surplus,character)) surplus[character]++;
+      if (character === "(") surplus[")"]--;
+      if (character === "[") surplus["]"]--;
+      if (character === "{") surplus["}"]--;
+    }
+    let end = candidate.length;
+    while (end > 0) {
+      const character = candidate[end - 1];
+      if (surplus[character] > 0) surplus[character]--;
+      else if (!/[.,!?;:…。，]/.test(character)) break;
+      end--;
+    }
+    const url = candidate.slice(0,end);
+    html += esc(text.slice(cursor,start)) + link(url,url);
+    cursor = start + end;
+  }
+  return html + esc(text.slice(cursor));
+}
+const textFields = (item, fields) => fields.map(([key,label]) => item[key] ? label + " " + item[key] : "").filter(Boolean).join("\n");
+const visitRecord = visit => record(visit.site_location, [
+  "นัดหมาย " + date(visit.scheduled_visit_at),
+  visit.actual_visit_at && "เข้าบริการจริง " + date(visit.actual_visit_at),
+  state.engineers[visit.visit_engineer_id],
+  visit.visit_findings,
+  visit.follow_up_required && "ต้องเข้าซ้ำ · " + date(visit.next_visit_at)
+].filter(Boolean).join("\n"));
+const attemptRecord = attempt => record("ครั้งที่ " + attempt.attempt_no + " · " + R.tests[attempt.test_result] + " · " + date(attempt.attempt_at), [
+  [state.engineers[attempt.engineer_id], R.locations[attempt.location_type]].filter(Boolean).join(" · "),
+  textFields(attempt,[["symptom_before","อาการก่อนซ่อม"],["actions_taken","การดำเนินการ"],["parts_replaced","อะไหล่ที่เปลี่ยน"],["remaining_symptom","อาการที่ยังพบ"],["failure_reason","สาเหตุที่ไม่สำเร็จ"],["failure_note","รายละเอียด"],["next_action","ขั้นตอนถัดไป"]]),
+  attempt.next_owner_id && "ผู้รับผิดชอบต่อ " + state.engineers[attempt.next_owner_id]
+].filter(Boolean).join("\n"));
+const partRecord = part => record(part.part_name + " · " + part.part_number, [
+  part.quantity + " ชิ้น",
+  textFields(part,[["part_status","สถานะ"],["ordered_at","วันที่สั่ง"],["eta_at","คาดว่าจะได้รับ"],["received_at","วันที่ได้รับ"],["po_number","PO"],["claim_number","เลขเคลม"],["tracking_number","เลขติดตาม"]])
+].filter(Boolean).join("\n"));
+const isQuoteImage = source => typeof source === "string" && /^data:image\/(jpeg|png|webp);base64,[a-z0-9+/]+={0,2}$/i.test(source);
+const quoteCurrency = new Intl.NumberFormat("th-TH",{style:"currency",currency:"THB"});
+const quotationLabel = quote => quote ? quote.quotation_number || "ยังไม่ระบุเลขใบเสนอราคา" : "ยังไม่มีใบเสนอราคา";
+function quoteImageButton(quote, repairId) {
+  const driveId = quote?.image_drive?.id;
+  const label = icon("image") + ' เปิดรูปภาพ';
+  if (/^[A-Za-z0-9_-]+$/.test(driveId || "")) {
+    return '<a class="button compact quote-image-trigger" target="_blank" rel="noopener noreferrer" href="https://drive.google.com/file/d/' +
+      driveId + '/view">' + label + '</a>';
+  }
+  if (!isQuoteImage(quote?.image_data_url)) return "";
+  return '<button type="button" class="button compact quote-image-trigger" data-quote-image="' + esc(quote.quotation_id) +
+    '" data-key="' + esc(repairId) + '">' + label + '</button>';
+}
+
+function localQuoteActions(quote, repairId) {
+  if (!isQuoteImage(quote.image_data_url)) return "";
+  const filename = quote.image_name || quoteImagePath(quote).filename;
+  return '<div class="data-actions"><a class="button compact" href="' + esc(quote.image_data_url) +
+    '" download="' + esc(filename) + '">' + icon("download") + ' ดาวน์โหลดรูป</a>' +
+    (canChooseQuoteFolder() ? '<button type="button" class="button compact" data-archive-quote="' + esc(quote.quotation_id) +
+      '" data-key="' + esc(repairId) + '">บันทึกรูปลงโฟลเดอร์</button>' : '') +
+    '<span data-quote-drive-controls="' + esc(quote.quotation_id) + '">' + quoteDriveControls(repairId,quote) + '</span></div>';
+}
+const quoteRecord = (quote, repairId) => '<div class="record-text">' + record(quotationLabel(quote), [
+  quoteCurrency.format(quote.quoted_amount_thb),
+  textFields(quote,[["quoted_at","วันที่เสนอราคา"],["quotation_status","สถานะ"],["decision_at","วันที่ตัดสินใจ"],["rejection_reason","เหตุผลที่ปฏิเสธ"]])
+].filter(Boolean).join("\n")) + '</div>' + quoteImageButton(quote,repairId) + localQuoteActions(quote,repairId);
+
+function openQuoteImage(repairId, quoteId) {
+  const quote = findRepair(repairId)?.quotes.find(item => item.quotation_id === quoteId);
+  if (!isQuoteImage(quote?.image_data_url)) return;
+  const mime = quote.image_data_url.slice(5,quote.image_data_url.indexOf(";")).toLowerCase();
+  const url = URL.createObjectURL(new Blob([quoteImageBytes(quote.image_data_url)],{type:mime}));
+  window.open(url,"_blank","noopener,noreferrer");
+  setTimeout(() => URL.revokeObjectURL(url),60_000);
+}
+
+function detail(id) {
+  const row = findRepair(id);
+  if (!row) return;
+  const failures = R.failed(row);
+  const risk = failures >= state.settings.critical ? "ติดตามเร่งด่วน" : failures >= state.settings.manager ? "ให้ผู้จัดการตรวจสอบ" : failures >= state.settings.repeated ? "ซ่อมไม่สำเร็จหลายครั้ง" : failures >= state.settings.watch ? "เฝ้าระวัง" : "";
+  const related = state.repairs.filter(other => other.repair_id !== id &&
+    ((row.machine_id && other.machine_id === row.machine_id) || (row.serial_number && other.serial_number === row.serial_number)))
+    .sort((a,b) => Date.parse(b.reported_at) - Date.parse(a.reported_at));
+  const closedDay = R.closedDay(row);
+  const recurrent = related.some(other => {
+    const previousClose = R.closedDay(other);
+    return previousClose && other.test_result === "PASS" && previousClose <= R.bangkokDay(row.reported_at);
+  });
+  const statusEvent = [...row.history].reverse().find(event => event.old_value !== event.new_value && Object.hasOwn(state.statuses, event.new_value));
+  const statusAge = statusEvent ? R.age({ reported_at: statusEvent.occurred_at, status: row.status, closed_at: row.closed_at }) : null;
+  openDialog("รายละเอียดงานซ่อม", row.srn,
+    '<div class="detail-heading"><div class="flags">' + badge(state.statuses[row.status], statusTone(row.status)) + (risk ? badge(risk + " · ไม่ผ่าน " + failures + " ครั้ง", "rose") : "") + (recurrent ? badge("พบประวัติเครื่องซ่อมสำเร็จก่อนเปิดเคสนี้", "purple") : "") + '</div>' + exportButton("detail",id) + '</div>' +
+    '<section class="detail-section"><h3>ข้อมูลงานซ่อม</h3>' + meta([["รหัสงาน",row.repair_id],["ลูกค้า",state.customers[row.customer_id]],["ยี่ห้อและรุ่น",row.brand + " " + row.model],["Serial Number",row.serial_number || "ยังไม่ระบุ"],["Machine ID",row.machine_id],["ช่าง",assignedEngineer(row)],["ความเร่งด่วน",R.priorities[row.priority]],["ประเภทเปิดงาน",R.types[row.initial_service_type]],["สถานที่ซ่อมปัจจุบัน",R.locations[row.current_location_type]],["วันที่รับแจ้ง",date(row.reported_at)],["กำหนดเสร็จ",date(row.due_date)],["อัปเดตล่าสุด",timestamp(row.updated_at)],["อายุงาน",R.age(row) + " วัน"],["อยู่ในสถานะนี้",statusAge === null ? "—" : statusAge + " วัน"],["ซ่อมไม่ผ่าน",failures + " ครั้ง"]]) + '</section>' +
+    copyableRecord("อาการเสียและความคืบหน้า", row.issue_description + "\n" + textFields(row,[["error_code","Error Code"],["initial_findings","ผลตรวจสอบ"],["root_cause","สาเหตุ"],["hold_reason","เหตุผลที่ติดขัด"],["next_action","ขั้นตอนถัดไป"]])) +
+    (row.received_at_company_at || row.storage_location || row.repair_started_at || row.returned_to_customer_at ? copyableRecord("ข้อมูล In-House", textFields(row,[["received_at_company_at","รับเครื่อง"],["storage_location","ที่เก็บเครื่อง"],["received_by","ผู้รับเครื่อง"],["repair_started_at","เริ่มซ่อม"],["returned_to_customer_at","ส่งคืน"]])) : '') +
+    (closedDay ? copyableRecord("ปิดงาน · " + date(closedDay), [row.final_outcome, R.tests[row.test_result], row.close_note].filter(Boolean).join(" · "),link(row.service_report_url,"เปิดรายงานบริการ")) : "") +
+    records("การเข้าบริการ (Visits)", row.visits, visitRecord) +
+    records("รอบการซ่อม (Attempts)", row.attempts, attemptRecord) +
+    records("อะไหล่", row.parts, partRecord) +
+    records("ใบเสนอราคา", row.quotes, quote => quoteRecord(quote,id)) +
+    records("เอกสาร", String(row.attachments || "").split(/\s+/).filter(Boolean), url => link(url, url)) +
+    records("ประวัติเครื่องเดียวกัน", related, other => '<button class="text-button" data-open="' + esc(other.repair_id) + '">' + esc(other.srn) + '</button><p>' + date(other.reported_at) + ' · ' + esc(state.statuses[other.status]) + '</p>'));
+}
+
+function notify(message) {
+  const toast = document.querySelector("#toast");
+  clearTimeout(notify.timer);
+  (dialog.open ? dialog : document.body).append(toast);
+  toast.textContent = message;
+  toast.hidden = false;
+  notify.timer = setTimeout(() => { toast.hidden = true; }, 3200);
+}
+
+document.querySelectorAll("[data-icon]").forEach(element => { element.innerHTML = icon(element.dataset.icon); });
+document.querySelector("#dialog-close").addEventListener("click", () => dialog.close());
+window.addEventListener("hashchange", () => {
+  if (dialog.open) dialog.close();
+  clearFilters();
+  render();
+  window.scrollTo(0,0);
+});
+window.addEventListener("DOMContentLoaded", () => isLiveDatabase() ? loadLiveDatabase() : render());
+
+</script>
+<script>
+"use strict";
+
+const monthsShort = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+const monthLabel = key => monthsShort[Number(key.slice(5)) - 1] + " " + key.slice(0, 4);
+const waiting = ["WAITING_PARTS","WAITING_FACTORY","WAITING_CUSTOMER_APPROVAL"];
+const filters = { query: "", location: "", status: "", flag: "", quoteScope: "", assignment: "", quoteNumber: "", from: "", to: "" };
+let tablePage = 1;
+const chart = { start: R.shiftMonth(R.month, -11), end: R.month, type: "" };
+const isQuotationJob = repair => repair.status === "WAITING_CUSTOMER_APPROVAL" || repair.quotes?.length > 0;
+const repairingStatuses = ["INSPECTING","REPAIRING","WAITING_PARTS","WAITING_FACTORY","WAITING_TEST","REPAIR_FAILED"];
+const repairSections = {
+  "#repairs": { title:"งานรอตรวจสอบ", description:"รายการที่รับแจ้งแล้วและรอเริ่มตรวจสอบ", statuses:["PENDING_INSPECTION"],
+    matches:repair => repair.status === "PENDING_INSPECTION" },
+  "#in-progress": { title:"อยู่ระหว่างซ่อม", description:"งานที่เริ่มดำเนินการและยังซ่อมไม่เสร็จ", statuses:repairingStatuses,
+    matches:repair => repairingStatuses.includes(repair.status) && !isQuotationJob(repair) },
+  "#quotations": { title:"เสนอราคา", description:"ใบเสนอราคาและงานรอลูกค้าอนุมัติ เฉพาะงานที่ยังไม่ปิด",
+    matches:isQuotationJob }
+};
+const dashboardSection = (hash = location.hash) => repairSections[hash];
+const isQuotationView = () => location.hash === "#quotations";
+const isRepairQueue = () => location.hash === "#in-progress";
+const hasDateRange = () => Boolean(filters.from || filters.to);
+const quotationJobScope = () => filters.quoteScope || (hasDateRange() ? "all" : "open");
+const byRisk = (a, b) => R.failed(b) - R.failed(a) || Number(R.overdue(b)) - Number(R.overdue(a)) || R.age(b) - R.age(a);
+const isSpecial = row => R.failed(row) >= state.settings.repeated || R.overdue(row) || R.age(row) > 30;
+const statusTone = status => Object.hasOwn(R.statuses,status) ? "status-" + status.toLowerCase().replaceAll("_","-") : "neutral";
+const flagChecks = {
+  active:R.active, overdue:R.overdue,
+  waiting:r => waiting.includes(r.status), special:r => R.active(r) && isSpecial(r),
+  "active-repeated":r => R.active(r) && R.failed(r) >= state.settings.repeated
+};
+const flagLabels = {active:"งานซ่อมคงค้าง",overdue:"เกินกำหนด",waiting:"งานที่รอ",special:"งานที่ต้องติดตาม","active-repeated":"งานเปิดที่ซ่อมไม่ผ่านหลายครั้ง"};
+
+function dashboard() {
+  const total = state.repairs.length;
+  const active = state.repairs.filter(R.active);
+  const count = condition => active.filter(condition).length;
+  const repeated = count(row => R.failed(row) >= state.settings.repeated);
+  const metrics = [
+    ["งานซ่อมทั้งหมด", total, "list", "teal", "รวมทุกสถานะ", "all"],
+    ["งานซ่อมคงค้าง", active.length, "briefcase", "teal", "In-House " + count(r => r.current_location_type === "IN_HOUSE") + " · On-Site " + count(r => r.current_location_type === "ON_SITE"), "active"],
+    ["ปิดงานแล้ว", total - active.length, "check", "teal", "ดูรายการที่ปิดงาน", "closed"],
+    ["เกินกำหนด", count(R.overdue), "clock", "amber", "ค้างเกิน 30 วัน " + count(r => R.age(r) > 30) + " งาน", "overdue"],
+    ["งานที่รอ", count(r => waiting.includes(r.status)), "hourglass", "blue", "อะไหล่ " + count(r => r.status === waiting[0]) + " · โรงงาน " + count(r => r.status === waiting[1]) + " · อนุมัติ " + count(r => r.status === waiting[2]), "waiting"],
+    ["ซ่อมไม่สำเร็จหลายครั้ง", repeated, "triangle", "rose", "งานเปิดที่ซ่อมไม่ผ่านตั้งแต่ " + state.settings.repeated + " ครั้ง", "active-repeated"]
+  ];
+  const follow = active.filter(isSpecial).sort(byRisk);
+  return '<header class="hero"><div><h1>ติดตามงานซ่อม</h1><p class="subtitle">ภาพรวมงานซ่อมทุกสถานะ แนวโน้มการรับแจ้ง และงานที่ต้องติดตาม</p></div></header>' +
+    '<div class="dashboard-overview"><section class="panel dashboard-summary"><header class="section-head"><h2 class="icon-title">' + icon("briefcase") + ' สรุปงานซ่อม</h2></header>' +
+    '<div class="metrics">' + metrics.map(([name, count, symbol, color, detail, flag]) =>
+      '<button class="metric" data-metric="' + flag + '"><div class="metric-row"><span class="metric-label">' + name + '</span><span class="tile-icon ' + color + '">' + icon(symbol) + '</span></div><div class="metric-value"><strong>' + count + '</strong><span>งาน</span></div><small>' + detail + '</small></button>').join("") + '</div></section>' +
+    '<section class="panel" id="monthly-panel">' + monthlyPanel() + '</section></div>' + dashboardStatuses(total) +
+    '<section class="panel dashboard-follow"><header class="section-head"><div><h2 class="icon-title">' + icon("bell") + ' งานที่ต้องติดตาม</h2><p>งานเกินกำหนด ค้างนาน หรือซ่อมหลายครั้ง</p></div>' +
+    '<div class="data-actions"><span class="badge rose">' + follow.length + ' งาน</span><button class="button compact" data-metric="special">ดูงานที่ต้องติดตามทั้งหมด</button></div></header><div class="case-list">' +
+    (follow.slice(0, 3).map(row => '<button class="case" data-open="' + esc(row.repair_id) + '"><span class="tile-icon rose">' + icon("triangle") + '</span><span><strong>' + esc(row.srn) + '</strong><small>' + esc(row.brand + " " + row.model) + '</small></span><span class="case-count">' + (R.failed(row) >= state.settings.repeated ? 'ไม่ผ่าน ' + R.failed(row) + ' ครั้ง' : R.overdue(row) ? 'เกินกำหนด' : 'ค้าง ' + R.age(row) + ' วัน') + '</span></button>').join("") || '<p class="empty">ไม่มีงานที่ต้องติดตามเป็นพิเศษ</p>') +
+    '</div></section>' + repairList("งานซ่อมทั้งหมด");
+}
+
+function dashboardStatuses(total) {
+  const counts = new Map();
+  state.repairs.forEach(row => counts.set(row.status,(counts.get(row.status) || 0) + 1));
+  return '<section class="panel dashboard-status"><header class="section-head"><div><h2>งานตามสถานะ</h2><p>เลือกสถานะเพื่อดูรายการงานซ่อม</p></div></header><div class="status-grid">' +
+    Object.entries(state.statuses).map(([status,label]) => {
+      const count = counts.get(status) || 0;
+      return '<button type="button" class="status-card ' + statusTone(status) + '" data-dashboard-status="' + esc(status) + '"><span>' + esc(label) + '</span><strong>' +
+        count + '</strong><span class="status-track" aria-hidden="true"><span style="width:' + (total ? count / total * 100 : 0) + '%"></span></span></button>';
+    }).join("") + '</div></section>';
+}
+
+function repairIndex(section) {
+  return '<header class="hero"><div><h1>' + section.title + '</h1><p class="subtitle"' + (isQuotationView() ? ' id="quotation-scope"' : '') + '>' + section.description + '</p></div></header>' + repairList(isQuotationView() ? "รายการใบเสนอราคา" : "รายการงานซ่อม");
+}
+
+function repairList(title) {
+  const total = isQuotationView() ? '<span class="badge" id="quotation-total"></span>' : '';
+  return '<section class="panel table-panel" id="repair-list"><header class="section-head"><div><h2 class="icon-title" tabindex="-1">' + icon("list") + ' ' + title + '</h2><p>เลือกเลขที่ SRN เพื่อดูรายละเอียดและประวัติของเครื่อง</p></div><div class="data-actions"><span class="badge" id="result-count" role="status"></span>' + total + exportButton("dashboard") + '</div></header>' + tableControls() + '<div id="table-output"></div></section>';
+}
+
+function monthlyPanel() {
+  const [prev, now] = R.monthly(state.repairs, R.shiftMonth(R.month, -1), R.month, chart.type);
+  const series = R.monthly(state.repairs, chart.start, chart.end, chart.type);
+  const peak = Math.max(4, Math.ceil(Math.max(...series.map(item => item.total)) / 4) * 4);
+  const delta = now.total - prev.total;
+  const percent = prev.total ? ((delta / prev.total) * 100).toFixed(1) + "%" : "N/A";
+  const signed = value => (delta > 0 ? "+" : "") + value;
+  return '<header class="section-head"><div><h2 class="icon-title">' + icon("chart") + ' จำนวนการแจ้งซ่อมรายเดือน</h2><p>ตามวันที่รับแจ้งและประเภทเปิดงาน รวมทุกสถานะ ' + (series.some(item => item.invalid) ? '· พบข้อมูลประเภทงานที่ไม่ถูกต้อง' : '') + '</p></div><button class="button compact" data-action="chart-range">' + icon("calendar") + ' ช่วงเดือน</button></header>' +
+    '<div class="chart-summary"><div><small>เดือนนี้ (MTD)</small><b>' + now.total + ' งาน</b></div><div><small>เดือนก่อน</small><b>' + prev.total + ' งาน</b></div><div><small>เปลี่ยนแปลง MoM</small><b class="' + (delta < 0 ? "" : "delta") + '">' + signed(delta) + ' <small>(' + (prev.total ? signed(percent) : percent) + ')</small></b></div><div style="margin-left:auto"><select id="chart-type" aria-label="ประเภทเปิดงาน">' + options(R.types, chart.type, "ทุกประเภท") + '</select></div></div>' +
+    '<div class="chart-scroll" tabindex="0" aria-label="กราฟจำนวนการแจ้งซ่อมรายเดือน เลื่อนได้"><div class="chart" style="--months:' + series.length + '"><div class="axis" aria-hidden="true">' +
+    [0,1,2,3,4].map(step => '<span style="top:' + step * 25 + '%">' + peak * (4 - step) / 4 + '</span>').join("") +
+    '</div><div class="plot" style="--months:' + series.length + '">' +
+    series.map(item => {
+      const label = monthLabel(item.month) + " · " + item.total + " งาน (In-House " + item.in_house + ", On-Site " + item.on_site + ")";
+      return '<button aria-label="' + label + '" title="' + label + '" data-month="' + item.month + '"><span class="bar" style="--bar:' + (item.total / peak * 100) + '%"><span style="height:' + (item.total ? item.in_house / item.total * 100 : 0) + '%"></span><span style="height:' + (item.total ? item.on_site / item.total * 100 : 0) + '%"></span></span><small>' + monthLabel(item.month).split(" ")[0] + '</small></button>';
+    }).join("") + '</div></div></div><div class="keys"><span class="key"><i class="house"></i>In-House</span><span class="key"><i class="site"></i>On-Site</span><button class="text-button key" data-action="month-summary">ตารางรายเดือน</button></div>' + '<div class="chart-data-actions">' + exportButton("monthly") + '</div>';
+}
+
+function dateRangeControls(values = filters, admin = false) {
+  const label = isQuotationView() ? "วันที่เสนอราคา" : "วันที่รับแจ้ง";
+  const filterAttribute = admin ? "data-admin-filter" : "data-filter";
+  const resetAction = admin ? "reset-admin-filters" : "clear-filters";
+  return '<fieldset class="repair-date-filter"><legend><span class="repair-date-heading">' + icon("calendar") + ' ช่วง' + label +
+    ' <span class="badge" id="date-range-active" hidden>กำลังกรอง</span></span></legend>' +
+    '<div class="repair-date-fields">' +
+    '<label class="field">ตั้งแต่วันที่<input type="date" ' + filterAttribute + '="from" value="' + esc(values.from) + '" aria-describedby="date-range-error"></label>' +
+    '<label class="field">ถึงวันที่<input type="date" ' + filterAttribute + '="to" value="' + esc(values.to) + '" aria-describedby="date-range-error"></label>' +
+    '<button type="button" class="button filter-reset" data-action="' + resetAction + '">รีเซ็ต</button>' +
+    '</div><p class="error" id="date-range-error" role="status" hidden></p></fieldset>';
+}
+
+function matchesDateRange(value, { from,to } = filters) {
+  if (!from && !to) return true;
+  if (!Number.isFinite(Date.parse(value))) return false;
+  const day = R.bangkokDay(value);
+  return (!from || day >= from) && (!to || day <= to);
+}
+
+function updateDateRangeFeedback({ from,to } = filters) {
+  document.querySelector("#date-range-active").hidden = !from && !to;
+  const error = document.querySelector("#date-range-error");
+  const invalidRange = from && to && from > to;
+  error.textContent = invalidRange ? "วันที่เริ่มต้นต้องไม่อยู่หลังวันที่สิ้นสุด" : "";
+  error.hidden = !invalidRange;
+}
+
+function tableControls() {
+  const section = dashboardSection();
+  const quotes = isQuotationView();
+  const examples = quotes ? "เลขใบเสนอราคา, ลูกค้า, รุ่น" : "SRN, รุ่น, ช่าง, อาการเสีย";
+  const select = (key,label,choices,placeholder) => '<select aria-label="' + label + '" data-filter="' + key + '">' + options(choices,filters[key],placeholder) + '</select>';
+  const locationFilter = () => select("location","สถานที่ซ่อม",R.locations,"ทุกสถานที่");
+  const statusFilter = statuses => select("status","สถานะงานซ่อม",statuses,"ทุกสถานะ");
+  let controls;
+  if (quotes) {
+    controls = select("quoteScope","สถานะงานซ่อม",{open:"เฉพาะงานที่ยังเปิด",closed:"เฉพาะงานที่ปิดแล้ว",all:"ทุกสถานะงานซ่อม"},"สถานะงานซ่อม (อัตโนมัติ)") +
+      select("quoteNumber","เลขใบเสนอราคา",{missing:"ยังไม่ระบุเลขใบเสนอราคา"},"ทุกเลขใบเสนอราคา");
+  } else if (isRepairQueue()) {
+    const statuses = Object.fromEntries(section.statuses.map(code => [code,state.statuses[code] || R.statuses[code]]));
+    controls = statusFilter(statuses) + select("flag","กำหนดเสร็จ",{overdue:"เฉพาะงานเกินกำหนด"},"ทุกกำหนดเสร็จ");
+  } else if (section) {
+    controls = locationFilter() + select("assignment","การจ่ายงาน",{unassigned:"ยังไม่จ่ายช่าง",assigned:"จ่ายช่างแล้ว"},"การจ่ายงานทั้งหมด");
+  } else {
+    controls = statusFilter(state.statuses) + locationFilter();
+  }
+  const drilldown = !section && filters.flag ? '<span class="badge">' + esc(flagLabels[filters.flag]) + '</span>' : '';
+  return '<div class="repair-filter-layout"><div class="toolbar repair-toolbar"><label class="search grow">' + icon("search") +
+    '<input type="search" aria-label="ค้นหาด้วยคีย์เวิร์ด" placeholder="ค้นหา เช่น ' + examples + '" value="' + esc(filters.query) + '" data-filter="query"></label>' +
+    controls + drilldown + '</div>' + dateRangeControls() + '</div>';
+}
+
+const keywordTerms = query => lookupKey(query).split(/\s+/).filter(Boolean);
+const keywordText = values => values.map(lookupKey).filter(Boolean).join("\n");
+const searchableDates = (...values) => values.filter(value => value && Number.isFinite(Date.parse(value)))
+  .flatMap(value => [value,date(value)]);
+
+function repairKeywordText(repair) {
+  const details = [
+    repair.error_code,repair.initial_findings,repair.root_cause,repair.attachments,repair.storage_location,repair.received_by,
+    repair.final_outcome,repair.close_note,repair.service_report_url,R.tests[repair.test_result],R.overdue(repair) ? "เกินกำหนด" : "",
+    ...searchableDates(repair.reported_at,repair.updated_at,repair.due_date,repair.received_at_company_at,
+      repair.repair_started_at,repair.returned_to_customer_at,R.closedDay(repair))
+  ];
+  const visits = (repair.visits || []).flatMap(visit => [
+    visit.site_location,state.engineers[visit.visit_engineer_id],visit.visit_findings,visit.follow_up_required ? "ต้องเข้าซ้ำ" : "",
+    ...searchableDates(visit.scheduled_visit_at,visit.actual_visit_at,visit.next_visit_at)
+  ]);
+  const attempts = (repair.attempts || []).flatMap(attempt => [
+    attempt.attempt_no,state.engineers[attempt.engineer_id],R.locations[attempt.location_type],R.tests[attempt.test_result],
+    attempt.symptom_before,attempt.actions_taken,attempt.parts_replaced,attempt.remaining_symptom,
+    attempt.failure_reason,attempt.failure_note,attempt.next_action,state.engineers[attempt.next_owner_id],
+    ...searchableDates(attempt.attempt_at)
+  ]);
+  const parts = (repair.parts || []).flatMap(part => [
+    part.part_number,part.part_name,part.quantity,part.part_status,part.po_number,part.claim_number,part.tracking_number,
+    ...searchableDates(part.ordered_at,part.eta_at,part.received_at)
+  ]);
+  return keywordText([...repairCells(repair),repair.machine_id,...details,...visits,...attempts,...parts]);
+}
+
+function quotationKeywordText(repair,quote) {
+  return keywordText([...quotationCells({repair,quote}),quotationLabel(quote),quote?.description,quote?.image_name,
+    quote?.quoted_amount_thb != null && quote.quoted_amount_thb !== "" ? quoteCurrency.format(quote.quoted_amount_thb) : "",
+    ...searchableDates(quote?.quoted_at,quote?.decision_at)]);
+}
+
+function repairMatchesSearch(repair,terms) {
+  if (!terms.length) return true;
+  const text = repairKeywordText(repair);
+  if (terms.every(term => text.includes(term))) return true;
+  const quoteTexts = (repair.quotes || []).map(quote => quotationKeywordText(repair,quote));
+  return terms.every(term => text.includes(term) || quoteTexts.some(quote => quote.includes(term)));
+}
+
+function dashboardRows() {
+  const section = dashboardSection();
+  const scope = isQuotationView() ? quotationJobScope() : section ? "open" : "all";
+  const terms = isQuotationView() ? [] : keywordTerms(filters.query);
+  const rows = state.repairs.filter(r => (scope === "all" || R.active(r) === (scope === "open")) && (!section?.matches || section.matches(r)) &&
+    (isQuotationView() || matchesDateRange(r.reported_at)) &&
+    (!filters.location || r.current_location_type === filters.location) && (!filters.status || r.status === filters.status) &&
+    (!filters.assignment || Boolean(r.assigned_engineer_id) === (filters.assignment === "assigned")) &&
+    (!filters.flag || flagChecks[filters.flag](r)) && repairMatchesSearch(r,terms));
+  rows.sort(byRisk);
+  return rows;
+}
+
+function quotationRows() {
+  const terms = keywordTerms(filters.query);
+  const scope = quotationJobScope();
+  return dashboardRows().flatMap(repair => {
+    const text = terms.length ? repairKeywordText(repair) : "";
+    const quotes = repair.quotes?.length ? repair.quotes : scope === "open" ? [null] : [];
+    return quotes
+      .filter(quote => matchesDateRange(quote?.quoted_at))
+      .filter(quote => !filters.quoteNumber || (quote && !String(quote.quotation_number || "").trim()))
+      .filter(quote => {
+        if (terms.every(term => text.includes(term))) return true;
+        const quoteText = quotationKeywordText(repair,quote);
+        return terms.every(term => text.includes(term) || quoteText.includes(term));
+      })
+      .map(quote => ({ repair, quote }));
+  });
+}
+
+const repairTableColumns = ["SRN","ลูกค้า","ยี่ห้อ","รุ่น","Serial Number","สถานที่ปัจจุบัน","ช่าง","สถานะ","ซ่อมไม่ผ่าน","อายุงาน (วัน)","อัปเดตล่าสุด","กำหนดเสร็จ"];
+
+function quotationTableRow({ repair, quote }) {
+  const link = '<button class="text-button serial" data-open="' + esc(repair.repair_id) + '">' + esc(repair.srn) + '</button>';
+  const number = quotationLabel(quote);
+  const copy = copyItemButton("คัดลอก " + (quote ? number : repair.srn),quotationCopyText({repair,quote}),true);
+  const amount = quote?.quoted_amount_thb != null && quote.quoted_amount_thb !== "" ? quoteCurrency.format(quote.quoted_amount_thb) : "—";
+  return '<tr data-open="' + esc(repair.repair_id) + '"><td>' + link + '</td><td>' + esc(state.customers[repair.customer_id]) +
+    '</td><td><div class="row-copy">' + esc(number) + copy + '</div></td><td>' + esc(amount) +
+    '</td><td>' + esc(quote?.quotation_status || "—") + '</td><td>' + badge(state.statuses[repair.status],statusTone(repair.status)) +
+    '</td><td>' + date(quote?.quoted_at) + '</td><td>' + date(quote?.decision_at) +
+    '</td><td class="quote-note">' + esc(quote?.rejection_reason || "—") + '</td><td>' + esc(repair.brand + " " + repair.model) +
+    '</td><td>' + (quoteImageButton(quote,repair.repair_id) || "—") + '</td></tr>';
+}
+
+function table() {
+  const quotes = isQuotationView();
+  const rows = quotes ? quotationRows() : dashboardRows();
+  const columns = quotes ? quotationColumns : repairTableColumns;
+  const size = 10;
+  const pages = Math.max(1, Math.ceil(rows.length / size));
+  tablePage = Math.min(tablePage, pages);
+  const start = (tablePage - 1) * size;
+  document.querySelector("#result-count").textContent = rows.length + " รายการ";
+  updateDateRangeFeedback();
+  if (quotes) {
+    const scope = quotationJobScope();
+    document.querySelector("#quotation-scope").textContent = {
+      open:dashboardSection().description,
+      closed:"เฉพาะใบเสนอราคาของงานที่ปิดแล้ว",
+      all:"ใบเสนอราคาของทั้งงานที่ยังเปิดและงานที่ปิดแล้ว"
+    }[scope];
+    const satang = rows.reduce((total,{ quote }) => total + Math.round((Number(quote?.quoted_amount_thb) || 0) * 100),0);
+    document.querySelector("#quotation-total").textContent = "ยอดเสนอราคารวม " + quoteCurrency.format(satang / 100);
+  }
+  const visibleRows = rows.slice(start,start + size);
+  const rowHtml = quotes ? visibleRows.map(quotationTableRow).join("") : visibleRows.map(r => '<tr data-open="' + esc(r.repair_id) + '"><td><div class="row-copy"><button class="text-button serial" data-open="' + esc(r.repair_id) + '">' + esc(r.srn) + '</button>' + repairCopyButton(r) + '</div></td><td>' + esc(state.customers[r.customer_id]) + '</td><td>' + esc(r.brand) + '</td><td>' + esc(r.model) + '</td><td>' + esc(r.serial_number || "—") + '</td><td>' + esc(R.locations[r.current_location_type]) + '</td><td>' + esc(assignedEngineer(r)) + '</td><td>' + badge(state.statuses[r.status], statusTone(r.status)) + '</td><td>' + (R.failed(r) >= state.settings.repeated ? badge(R.failed(r) + " ครั้ง", "rose") : R.failed(r)) + '</td><td>' + R.age(r) + '</td><td>' + date(r.updated_at) + '</td><td>' + (R.overdue(r) ? badge(date(r.due_date) + " · เกินกำหนด", "amber") : date(r.due_date)) + '</td></tr>').join("");
+  const label = quotes ? "ตารางรายการใบเสนอราคา" : "ตารางรายการงานซ่อม";
+  const empty = '<tr><td colspan="' + columns.length + '" class="empty">' + (quotes ? "ไม่พบรายการเสนอราคาที่ตรงกับตัวกรอง" : "ไม่พบงานซ่อมที่ตรงกับตัวกรอง") + '</td></tr>';
+  document.querySelector("#table-output").innerHTML =
+    '<div class="table-scroll" tabindex="0" aria-label="' + label + ' เลื่อนได้"><table><thead><tr>' +
+    columns.map(name => '<th scope="col">' + name + '</th>').join("") +
+    '</tr></thead><tbody>' + (rowHtml || empty) +
+    '</tbody></table></div><div class="pagination"><span>' + (rows.length ? (start + 1) + '–' + Math.min(rows.length, start + size) + ' จาก ' + rows.length : '0 รายการ') + '</span><div class="segment"><button data-page="' + (tablePage - 1) + '" ' + (tablePage <= 1 ? "disabled" : "") + '>ก่อนหน้า</button><button data-page="' + (tablePage + 1) + '" ' + (tablePage >= pages ? "disabled" : "") + '>ถัดไป</button></div></div>';
+}
+
+</script>
+<script>
+"use strict";
+
+const adminTabs = { manage:["จัดการงานซ่อม","list"], new:["เปิดงานใหม่","plus"], update:["บันทึกและปิดงาน","history"], settings:["ข้อมูลหลักและตั้งค่า","settings"] };
+let adminTab = "manage", selectedId = "", activity = "progress", adminPage = 1;
+const adminFilters = {
+  manage:{query:"",status:"",from:"",to:""},
+  update:{query:"",scope:""}
+};
+const lookupKey = value => String(value ?? "").trim().normalize("NFC").toLowerCase();
+const isOtherBrand = brand => lookupKey(brand).replace(/\s+/g,"") === "อื่นๆ";
+const findMachineBySerial = (directory, serial) => directory.machines.find(machine => lookupKey(machine.serial_number) === lookupKey(serial));
+const choiceCollator = new Intl.Collator("th",{sensitivity:"base",numeric:true});
+const compareChoices = (a,b) => Number(a === "อื่นๆ") - Number(b === "อื่นๆ") || choiceCollator.compare(a,b);
+const engineerChoices = () => Object.fromEntries(Object.entries(state.engineers).sort((a,b) => compareChoices(a[1],b[1])));
+function machineChoices(field, brand = "") {
+  const catalog = field === "brand" ? Object.keys(R.modelsByBrand) : Object.hasOwn(R.modelsByBrand,brand) ? R.modelsByBrand[brand] : [];
+  const recorded = [...state.machines,...state.repairs]
+    .filter(item => !brand || item.brand === brand)
+    .map(item => item[field]).filter(Boolean);
+  return Object.fromEntries([...new Set([...catalog,...recorded])].sort(compareChoices).map(value => [value,value]));
+}
+const inHouseFields = [["received_at_company_at","วันที่รับเครื่อง","date"],["storage_location","สถานที่เก็บเครื่อง"],["received_by","ผู้รับเครื่อง"],["repair_started_at","วันที่เริ่มซ่อม","date"],["returned_to_customer_at","วันที่ส่งคืน","date"]];
+
+function fields(spec, values = {}) {
+  return '<div class="form-grid">' + spec.map(([key,label,type = "text",required = false,choices]) => {
+    const raw = values[key] ?? "";
+    const value = type === "date" && raw && !isNaN(Date.parse(raw)) ? R.bangkokDay(raw) : raw;
+    let input;
+    if (choices) input = '<select name="' + key + '" ' + (required ? "required" : "") + '>' + options(choices, value, "เลือก" + label) + '</select>';
+    else if (type === "textarea") input = '<textarea name="' + key + '" rows="2" ' + (required ? "required" : "") + '>' + esc(value) + '</textarea>';
+    else input = '<input type="' + type + '" name="' + key + '" value="' + esc(value) + '" ' + (type === "number" ? 'min="1"' : type === "decimal" ? 'inputmode="decimal"' : "") + ' ' + (required ? "required" : "") + '>';
+    return '<label class="field ' + (type === "textarea" ? "span" : "") + '">' + '<span>' + label + (required ? ' <em aria-label="จำเป็น">*</em>' : "") + '</span>' + input + '</label>';
+  }).join("") + '</div>';
+}
+const pick = (name, label, choices, required = true) => [name,label,"select",required,choices];
+const closingFields = [
+  ["repair_completed_at","วันที่ซ่อมเสร็จ","date",true],["returned_to_customer_at","วันที่ส่งคืน","date"],
+  pick("test_result","ผลทดสอบ",R.tests),["final_outcome","ผลสรุปงาน","text",true],
+  ["service_report_url","ลิงก์รายงานบริการ","url"],["close_note","หมายเหตุปิดงาน","textarea",true]
+];
+const formFooter = label => '<p class="error" role="alert" hidden></p><div class="actions"><button class="button primary" type="submit">' + icon("check") + ' ' + label + '</button></div>';
+const fieldset = (title, html, attributes = "") => '<fieldset ' + attributes + '><legend>' + title + '</legend>' + html + '</fieldset>';
+
+function admin() {
+  return '<section class="hero"><div><h1>จัดการงานซ่อม</h1><p class="subtitle">' + (isLiveDatabase() ? "เปิดงาน บันทึกความคืบหน้า และดูแลข้อมูลหลัก" : "เปิดงาน บันทึกความคืบหน้า และดูแลข้อมูลหลักในโหมดสาธิต") + '</p></div>' +
+    '<div class="data-actions">' + (adminTab === "settings" ? exportButton("settings") : (["edit","update"].includes(adminTab) && findRepair(selectedId) ? exportButton("detail",selectedId) : exportButton("admin"))) +
+    '<button class="button primary" data-admin-tab="new">' + icon("plus") + ' เปิดงานใหม่</button></div></section><div class="segment admin-nav" aria-label="เมนูจัดการ">' +
+    Object.entries(adminTabs).map(([key,[label,symbol]]) => toggle("admin-tab",key,label,key === (adminTab === "edit" ? "manage" : adminTab),symbol)).join("") + '</div>' +
+    '<section class="panel admin-panel">' + adminContent() + '</section>';
+}
+
+function adminContent() {
+  const current = findRepair(selectedId);
+  if (adminTab === "new" || adminTab === "edit") return repairForm(adminTab === "edit" ? current : null);
+  if (adminTab === "settings") return settingsForm();
+  if (adminTab === "update") return updateForm(current);
+  return '<header class="section-head"><div><h2>ค้นหาและแก้ไขงานเดิม</h2></div></header>' +
+    adminSearchControls("manage") + '<div id="admin-results"></div>';
+}
+
+function adminSearchControls(tab) {
+  const values = adminFilters[tab];
+  const manage = tab === "manage";
+  const queryId = manage ? "admin-query" : "update-job-query";
+  const searchFields = "SRN, ลูกค้า, Serial Number" + (manage ? ", ช่าง" : "");
+  const toolbar = '<div class="toolbar repair-toolbar"><label class="search grow">' + icon("search") +
+    '<input type="search" id="' + queryId + '" data-admin-filter="query" aria-label="ค้นหาจาก ' + searchFields + '" placeholder="ค้นหา ' + searchFields +
+    '" value="' + esc(values.query) + '" autocomplete="off" aria-controls="' + (manage ? "admin-results" : "update-job-results") + '"></label>' +
+    (manage
+      ? '<select data-admin-filter="status" aria-label="สถานะงานซ่อม">' + options(state.statuses,values.status,"ทุกสถานะ") + '</select>'
+      : '<select data-admin-filter="scope" aria-label="กลุ่มงาน">' + options({open:"งานที่ยังเปิด",closed:"งานที่ปิดแล้ว"},values.scope,"ทุกงาน") +
+        '</select><button type="button" class="button" data-action="reset-admin-filters">รีเซ็ต</button>') + '</div>';
+  return manage ? '<div class="repair-filter-layout">' + toolbar + dateRangeControls(values,true) + '</div>' : toolbar;
+}
+
+function resetAdminFilters(tab) {
+  Object.keys(adminFilters[tab]).forEach(key => { adminFilters[tab][key] = ""; });
+  if (tab === "manage") adminPage = 1;
+}
+
+function showSavedAdminRepair(srn) {
+  resetAdminFilters("manage");
+  adminFilters.manage.query = srn;
+  adminTab = "manage";
+}
+
+function showReopenedAdminRepair(id) {
+  selectedId = id;
+  adminTab = "update";
+  activity = "progress";
+}
+
+const reopenJobButton = id => '<button type="button" class="button compact" data-reopen-job="' + esc(id) + '">เปิดงานอีกครั้ง</button>';
+
+function adminRows(tab = "manage") {
+  const values = adminFilters[tab];
+  const query = lookupKey(values.query);
+  const manage = tab === "manage";
+  if (!manage && !query && !values.scope) return [];
+  return state.repairs.filter(row => {
+    if (manage) {
+      if ((values.status && row.status !== values.status) || !matchesDateRange(row.reported_at,values)) return false;
+    } else if (values.scope && R.active(row) !== (values.scope === "open")) return false;
+    const fields = [row.srn,state.customers[row.customer_id],row.serial_number];
+    if (manage) fields.push(...assignedEngineerNames(row));
+    return fields.some(value => lookupKey(value).includes(query));
+  }).sort((a,b) => Date.parse(b.updated_at) - Date.parse(a.updated_at));
+}
+
+function setAdminFilter(key,value) {
+  const values = adminFilters[adminTab];
+  if (!values || !Object.hasOwn(values,key)) return;
+  values[key] = value;
+  if (adminTab === "manage") {
+    adminPage = 1;
+    adminResults();
+  } else updateJobResults();
+}
+function adminResults() {
+  const results = adminRows();
+  const list = document.querySelector("#admin-results");
+  if (!list) return;
+  updateDateRangeFeedback(adminFilters.manage);
+  const size = 10;
+  const pages = Math.max(1,Math.ceil(results.length / size));
+  adminPage = Math.min(adminPage,pages);
+  const start = (adminPage - 1) * size;
+  list.innerHTML = '<p class="subtitle" role="status">พบ ' + results.length + ' งาน</p><div class="table-scroll" tabindex="0"><table><thead><tr>' +
+    ["SRN","ลูกค้า","เครื่อง","ช่าง","สถานะ","จัดการ"].map(label => '<th scope="col">' + label + '</th>').join("") + '</tr></thead><tbody>' +
+    (results.slice(start,start + size).map(row => '<tr><td><div class="row-copy"><button class="text-button serial" data-open="' + esc(row.repair_id) + '">' + esc(row.srn) + '</button>' + repairCopyButton(row) + '</div></td><td>' + esc(state.customers[row.customer_id]) + '</td><td>' + esc(row.brand + " " + row.model) + '</td><td>' + esc(assignedEngineer(row)) + '</td><td>' + badge(state.statuses[row.status],statusTone(row.status)) +
+      '</td><td><button class="button compact" data-edit="' + esc(row.repair_id) + '">แก้ไข</button>' +
+      ' ' + (R.active(row) ? '<button class="button compact" data-update="' + esc(row.repair_id) + '">บันทึก</button>' : reopenJobButton(row.repair_id)) +
+      '</td></tr>').join("") || '<tr><td colspan="6" class="empty">ไม่พบงานซ่อม</td></tr>') + '</tbody></table></div>' +
+    (pages > 1 ? '<div class="pagination"><span>หน้า ' + adminPage + ' จาก ' + pages + '</span><div class="segment">' +
+      '<button type="button" data-admin-page="' + (adminPage - 1) + '"' + (adminPage === 1 ? ' disabled' : '') + '>ก่อนหน้า</button>' +
+      '<button type="button" data-admin-page="' + (adminPage + 1) + '"' + (adminPage === pages ? ' disabled' : '') + '>ถัดไป</button></div></div>' : '');
+}
+function afterAdmin() {
+  if (adminTab === "manage") adminResults();
+  if (adminTab === "update" && !findRepair(selectedId)) updateJobResults();
+  const form = document.querySelector('form[data-form="repair"]');
+  if (form) {
+    syncRepairModels(form);
+    syncRepairLocation(form);
+  }
+}
+function repairForm(current) {
+  const closed = current?.status === "CLOSED";
+  const engineers = engineerChoices();
+  const initial = current ? { ...current, customer_name:state.customers[current.customer_id] } :
+    { reported_at:R.today, status:"PENDING_INSPECTION", priority:"MEDIUM", initial_service_type:"IN_HOUSE", current_location_type:"IN_HOUSE" };
+  return '<header class="section-head"><div><h2 id="repair-form-title" tabindex="-1">' + (current ? "แก้ไข " + esc(current.srn) : "เปิดงานซ่อมใหม่") + '</h2><p>' + (current ? esc(current.repair_id) : "ระบบจะสร้างรหัสงานเมื่อบันทึก") + '</p></div>' +
+    (closed ? badge(state.statuses.CLOSED,statusTone("CLOSED")) : '') + '</header><form data-form="repair">' +
+    fieldset("ข้อมูลรับแจ้ง", fields([
+      ["srn","เลขที่ใบงานซ่อม (SRN)","text",true],["reported_at","วันที่รับแจ้ง","date",true],
+      ["customer_name","ลูกค้า","text",true],
+      pick("brand","ยี่ห้อ",machineChoices("brand")),
+      isOtherBrand(initial.brand) ? ["model","รุ่น","text",true] : pick("model","รุ่น",initial.brand ? machineChoices("model",initial.brand) : {}),
+      ["serial_number","Serial Number","text"],
+      pick("assigned_engineer_id","ช่างผู้รับผิดชอบ",engineers,Boolean(current?.assigned_engineer_id)),
+      pick("secondary_engineer_id","ช่างผู้รับผิดชอบคนที่ 2",engineers,false),
+      pick("priority","ความเร่งด่วน",R.priorities),
+      pick("initial_service_type","ประเภทเมื่อเปิดงาน",R.types),pick("current_location_type","สถานที่ดำเนินงาน",R.locations),
+      ...(current ? [] : [pick("status","สถานะเริ่มต้น", activeStatuses())]),["issue_description","อาการเสียที่แจ้ง","textarea",true]
+    ],initial) + (current ? '<label class="field">เหตุผลการแก้ไข <em aria-label="จำเป็น">*</em><input name="edit_reason" required></label>' : '')) +
+    fieldset("ข้อมูล In-House",fields(closed ? inHouseFields.filter(([key]) => key !== "returned_to_customer_at") : inHouseFields,initial),'id="in-house-fields"') +
+    (closed ? fieldset("ข้อมูลปิดงาน",fields(closingFields.map(([key,label,type,,choices]) =>
+      [key,label,type,key === "repair_completed_at" && Boolean(current.repair_completed_at),choices]),initial)) : '') +
+    formFooter(current ? "บันทึกการแก้ไข" : "บันทึกงานซ่อม") + '</form>';
+}
+function syncRepairModels(form, selected = form.elements.model.value) {
+  const brand = form.elements.brand.value;
+  const model = form.elements.model;
+  if (isOtherBrand(brand)) {
+    if (model.tagName === "INPUT") model.value = selected;
+    else model.outerHTML = '<input type="text" name="model" value="' + esc(selected) + '" required>';
+    return;
+  }
+  const choices = options(brand ? machineChoices("model",brand) : {},selected,brand ? "เลือกรุ่น" : "เลือกยี่ห้อก่อน");
+  if (model.tagName === "INPUT") {
+    model.outerHTML = '<select name="model" required' + (brand ? '' : ' disabled') + '>' + choices + '</select>';
+  } else {
+    model.innerHTML = choices;
+    model.disabled = !brand;
+  }
+}
+
+function syncRepairSerial(form) {
+  const machine = findMachineBySerial(state,form.elements.serial_number.value);
+  if (!machine) return;
+  const previous = state.machines.find(item => item.machine_id === form.dataset.suggestedMachine);
+  const { brand, model } = form.elements;
+  const matchesSuggestion = previous && brand.value === previous.brand && model.value === previous.model;
+  if (!brand.value || matchesSuggestion) {
+    brand.value = machine.brand;
+    syncRepairModels(form,machine.model);
+    form.dataset.suggestedMachine = machine.machine_id;
+  } else if (brand.value === machine.brand && !model.value) {
+    model.value = machine.model;
+  }
+}
+
+function syncRepairLocation(form) {
+  const inHouse = document.querySelector("#in-house-fields");
+  inHouse.hidden = form.elements.current_location_type.value !== "IN_HOUSE";
+  inHouse.disabled = inHouse.hidden;
+}
+
+const quoteImageTypes = "image/jpeg,image/png,image/webp";
+const quoteImageMaxBytes = 1024 * 1024;
+const quoteImageField = () => '<div class="quote-upload"><label class="field" for="quote-image">รูปใบเสนอราคา (ไม่บังคับ)</label>' +
+  '<input id="quote-image" name="quote_image" type="file" accept="' + quoteImageTypes + '" aria-describedby="quote-image-help quote-image-status">' +
+  '<p class="subtitle" id="quote-image-help">JPG, PNG หรือ WebP ขนาดไม่เกิน 1 MB</p>' +
+  '<p class="quote-image-status" id="quote-image-status" role="status"></p>' +
+  '<div class="quote-image-preview" hidden><img alt="ตัวอย่างรูปใบเสนอราคา"></div>' +
+  '<button type="button" class="button compact" data-action="clear-quote-image" hidden>นำรูปออก</button>' +
+  (canUploadQuoteToDrive() ? '<p class="subtitle">รูปจะถูกอัปโหลดไปยัง Google Drive เมื่อบันทึกใบเสนอราคา</p>' :
+    '<p class="subtitle">โหมด Demo เก็บรูปในเบราว์เซอร์ ใช้ Web App ของ Apps Script สำหรับอัปโหลดไป Google Drive</p>') +
+  (canChooseQuoteFolder() && !canUploadQuoteToDrive() ? '<div class="quote-folder"><button type="button" class="button compact" data-action="choose-quote-folder">เลือกโฟลเดอร์เก็บรูป</button> <small id="quote-folder-status">' +
+    esc(quoteFolder ? quoteFolder.name + " / ปี / เดือน" : "รูปเก็บในเบราว์เซอร์ เลือกโฟลเดอร์เพื่อบันทึกสำเนาแยกตามปีและเดือน") + '</small></div>' : '') +
+  '</div>';
+
+const activityTabs = { progress:"ความคืบหน้า", visit:"เพิ่ม Visit", attempt:"เพิ่ม Attempt", transfer:"ย้ายสถานที่", quote:"เพิ่มใบเสนอราคา", close:"ปิดงาน" };
+const jobSummary = job => [state.customers[job.customer_id],job.serial_number, [job.brand,job.model].filter(Boolean).join(" ")].filter(Boolean).join(" · ");
+
+function updateJobResults() {
+  const list = document.querySelector("#update-job-results");
+  const count = document.querySelector("#update-job-count");
+  const { query,scope } = adminFilters.update;
+  const jobs = adminRows("update");
+  count.textContent = !query.trim() && !scope ? "พิมพ์คำค้นหรือเลือกกลุ่มงาน" : jobs.length ? "พบ " + jobs.length + " งาน" : "ไม่พบงานซ่อมที่ตรงกับตัวกรอง";
+  list.hidden = jobs.length === 0;
+  list.innerHTML = jobs.map(job => '<button type="button" class="case" data-update="' + esc(job.repair_id) + '">' +
+    '<span class="tile-icon teal">' + icon("briefcase") + '</span><span><strong>' + esc(job.srn) + '</strong><small>' +
+    esc(jobSummary(job)) + '</small></span>' + badge(state.statuses[job.status],statusTone(job.status)) + '</button>').join("");
+}
+
+function updateForm(current) {
+  const start = '<header class="section-head"><div><h2>บันทึกการดำเนินงาน</h2></div></header>';
+  if (!current) return start + '<div class="job-search">' + adminSearchControls("update") +
+    '<p id="update-job-count" class="subtitle" role="status"></p><div id="update-job-results" class="case-list job-results" role="region" aria-label="ผลการค้นหางานซ่อม" hidden></div></div>';
+  const selected = '<div class="job-current"><div><strong id="update-job-title" tabindex="-1">' + esc(current.srn) + '</strong><p class="subtitle">' +
+    esc(jobSummary(current)) + '</p></div>' + badge(state.statuses[current.status],statusTone(current.status)) +
+    '<div class="data-actions"><button type="button" class="button" data-action="change-update-job">' + icon("search") + ' ค้นหางานอื่น</button>' +
+    '<button type="button" class="button" data-open="' + esc(current.repair_id) + '">ดูรายละเอียดงาน</button>' +
+    (current.status === "CLOSED" ? '<button type="button" class="button" data-edit="' + esc(current.repair_id) + '">แก้ไขงานที่ปิดแล้ว</button>' + reopenJobButton(current.repair_id) : '') + '</div></div>';
+  if (current.status === "CLOSED") return start + selected;
+  const choices = Object.fromEntries(current.visits.map(v => [v.visit_id,date(v.actual_visit_at || v.scheduled_visit_at) + " · " + v.site_location]));
+  const reasonChoices = Object.fromEntries(R.reasons.map(reason => [reason,reason]));
+  const definitions = {
+    progress:[pick("status","สถานะ",activeStatuses()),["hold_reason","เหตุผลที่ติดขัด"],["next_action","ขั้นตอนถัดไป"],["note","บันทึกความคืบหน้า","textarea",true]],
+    visit:[["scheduled_visit_at","วันนัดหมาย","date",true],["actual_visit_at","วันที่เข้าบริการจริง","date"],pick("visit_engineer_id","ช่างที่เข้าบริการ",state.engineers),pick("follow_up_required","ต้องเข้าซ้ำ",{yes:"ใช่",no:"ไม่"}),["next_visit_at","วันที่นัดครั้งถัดไป","date"],["visit_findings","ผลตรวจสอบ","textarea"]],
+    attempt:[["attempt_at","วันที่ดำเนินการ","date",true],pick("engineer_id","ช่างผู้ดำเนินการ",state.engineers),pick("location_type","สถานที่",R.locations),pick("visit_id","เชื่อมกับ Visit",choices,false),pick("test_result","ผลทดสอบ",R.tests),["symptom_before","อาการก่อนซ่อม"],["parts_replaced","อะไหล่ที่เปลี่ยน"],["remaining_symptom","อาการที่ยังพบ"],pick("failure_reason","สาเหตุที่ไม่สำเร็จ",reasonChoices,false),["failure_note","รายละเอียดสาเหตุอื่น ๆ"],["actions_taken","งานที่ดำเนินการ","textarea",true],["next_action","แผนถัดไป"],pick("next_owner_id","ผู้รับผิดชอบขั้นตอนถัดไป",state.engineers,false)],
+    transfer:[pick("current_location_type","สถานที่ดำเนินงานใหม่",R.locations),["note","เหตุผลการย้าย","textarea",true]],
+
+    quote:[["quotation_number","เลขใบเสนอราคา","text"],["quoted_at","วันที่เสนอราคา","date"],["quoted_amount_thb","จำนวนเงิน (บาท)","number",true],["quotation_status","สถานะใบเสนอราคา"],["decision_at","วันที่ตัดสินใจ","date"],["rejection_reason","เหตุผลที่ปฏิเสธ"]],
+    close:closingFields
+  };
+  const unnamedQuotes = activity === "quote" ? current.quotes.filter(quote => !quote.quotation_number) : [];
+  const pendingNumbers = unnamedQuotes.length ? records("ใบเสนอราคาที่ยังไม่ระบุเลข",unnamedQuotes,quote =>
+    quoteRecord(quote,current.repair_id) + '<button type="button" class="button compact quote-number-trigger" data-fill-quote-number="' + esc(quote.quotation_id) +
+    '" data-repair="' + esc(current.repair_id) + '">' + icon("edit") + ' กรอกเลขใบเสนอราคา</button>') : "";
+  const defaults = { ...current, attempt_at:R.today, scheduled_visit_at:R.today, visit_engineer_id:current.assigned_engineer_id, engineer_id:current.assigned_engineer_id, location_type:current.current_location_type, closed_at:R.today, follow_up_required:"no" };
+  return start + selected + '<div class="segment admin-nav" aria-label="ประเภทการบันทึก">' +
+    Object.entries(activityTabs).map(([key,label]) => toggle("activity",key,label,activity === key,"plus")).join("") + '</div><form data-form="activity">' +
+    fields(definitions[activity], defaults).replace('name="quoted_amount_thb"', 'name="quoted_amount_thb" step="0.01"').replace('step="0.01" value="" min="1"', 'step="0.01" value="" min="0"') +
+    (activity === "quote" ? quoteImageField() : "") +
+    formFooter(activity === "close" ? "ยืนยันปิดงาน" : "บันทึก") + '</form>' + pendingNumbers;
+}
+function settingsForm() {
+  return '<header class="section-head"><div><h2>ข้อมูลหลักและตั้งค่า</h2><p>' + (isLiveDatabase() ? "การตั้งค่าใช้กับผู้ใช้ฐานข้อมูลนี้" : "ใช้กับข้อมูลสาธิตในเบราว์เซอร์นี้") + '</p></div></header>' +
+    '<form data-form="thresholds">' + fieldset("เกณฑ์แจ้งเตือนตามจำนวนครั้งที่ซ่อมไม่ผ่าน", fields([["watch","เฝ้าระวัง","number",true],["repeated","ซ่อมไม่สำเร็จหลายครั้ง","number",true],["manager","ผู้จัดการตรวจสอบ","number",true],["critical","ติดตามเร่งด่วน","number",true]],state.settings)) + formFooter("บันทึกเกณฑ์") + '</form>' +
+    '<section class="detail-section"><h3>สถานะงาน</h3><form data-form="status-label">' + fields([pick("code","สถานะ",state.statuses),["label","ชื่อแสดงผล","text",true]]) + formFooter("บันทึกชื่อสถานะ") + '</form></section>' +
+    '<section class="detail-section"><h3>ช่างผู้รับผิดชอบ</h3><p class="subtitle">' + esc(Object.values(state.engineers).join(" · ")) + '</p><form data-form="engineer">' + fields([["name","ชื่อช่าง","text",true]]) + formFooter("เพิ่มช่าง") + '</form></section>' +
+    '<section class="detail-section"><h3>ลูกค้า</h3><form data-form="customer">' + fields([["name","ชื่อลูกค้า","text",true]]) + formFooter("เพิ่มลูกค้า") + '</form></section>' +
+    '<section class="detail-section"><h3>ยี่ห้อ รุ่น และเครื่อง</h3><p class="subtitle">' + esc([...new Set(state.machines.map(m => m.brand + " " + m.model))].join(" · ")) + '</p><form data-form="machine">' +
+    fields([pick("customer_id","ลูกค้า",state.customers),["brand","ยี่ห้อ","text",true],["model","รุ่น","text",true],["serial_number","Serial Number","text",true]]) + formFooter("เพิ่มเครื่อง") + '</form></section>';
+}
+
+</script>
+<script>
+"use strict";
+
+const exportButton = (scope, key = "") => '<button type="button" class="button compact" data-export-view="' + scope +
+  '" data-key="' + esc(key) + '">' + icon("download") + ' Export CSV</button>';
+const copyItemButton = (label, text, iconOnly = false) => '<button type="button" class="button compact copy-item' + (iconOnly ? ' copy-item-icon' : '') +
+  '" data-copy-item' + (text === undefined ? '' : ' data-copy-text="' + esc(text) + '"') + ' title="' + esc(label) + '" aria-label="' + esc(label) + '">' +
+  icon("copy") + (iconOnly ? "" : " คัดลอก") + '</button>';
+
+const repairColumns = ["Repair ID","SRN","ลูกค้า","ยี่ห้อ","รุ่น","Serial Number","ประเภทเปิดงาน","สถานที่ปัจจุบัน","ช่าง","สถานะ","ความเร่งด่วน","ซ่อมไม่ผ่าน","อายุงาน (วัน)","วันที่รับแจ้ง","อัปเดตล่าสุด","กำหนดเสร็จ","อาการเสีย","เหตุผลที่ติดขัด","แผนถัดไป"];
+const repairCells = repair => [
+  repair.repair_id, repair.srn, state.customers[repair.customer_id], repair.brand, repair.model, repair.serial_number,
+  R.types[repair.initial_service_type], R.locations[repair.current_location_type], assignedEngineer(repair),
+  state.statuses[repair.status], R.priorities[repair.priority], R.failed(repair), R.age(repair),
+  repair.reported_at, repair.updated_at, repair.due_date, repair.issue_description, repair.hold_reason, repair.next_action
+];
+const repairCopyButton = repair => {
+  const cells = repairCells(repair);
+  const text = repairColumns.flatMap((label,index) => cells[index] == null || cells[index] === "" ? [] : [label + " " + cells[index]]).join("\n");
+  return copyItemButton("คัดลอกงาน " + repair.srn,text,true);
+};
+const quotationColumns = ["SRN","ลูกค้า","เลขใบเสนอราคา","ยอดเงิน (บาท)","สถานะใบเสนอราคา","สถานะงานซ่อม","วันที่เสนอราคา","วันที่ตัดสินใจ","เหตุผลที่ปฏิเสธ","เครื่อง","รูปใบเสนอราคา"];
+const quotationCells = ({ repair, quote }) => [
+  repair.srn,state.customers[repair.customer_id],quote ? quote.quotation_number ?? "" : quotationLabel(null),quote?.quoted_amount_thb,
+  quote?.quotation_status,state.statuses[repair.status],quote?.quoted_at,quote?.decision_at,quote?.rejection_reason,
+  repair.brand + " " + repair.model,quote?.image_drive?.path || (isQuoteImage(quote?.image_data_url) ? quoteImagePath(quote).path : "")
+];
+const quotationCopyText = entry => {
+  const cells = quotationCells(entry);
+  return quotationColumns.flatMap((label,index) => cells[index] == null || cells[index] === "" ? [] : [label + " " + cells[index]]).join("\n");
+};
+const monthlyRepairs = month => R.byMonth(state.repairs, month, chart.type)
+  .filter(repair => Object.hasOwn(R.types,repair.initial_service_type));
+const monthlyTotals = () => R.monthly(state.repairs,chart.start,chart.end,chart.type);
+const repairReport = (name, records) => ({ name, rows:[repairColumns,...records.map(repairCells)] });
+
+function detailReport(repair) {
+  const rows = [["หมวด","รายการ","ข้อมูล"]];
+  const cells = repairCells(repair);
+  repairColumns.forEach((label,index) => rows.push(["งานซ่อม",label,cells[index]]));
+  repair.visits.forEach(visit => rows.push(["การเข้าบริการ",visit.site_location,[visit.actual_visit_at || visit.scheduled_visit_at,state.engineers[visit.visit_engineer_id],visit.visit_findings].filter(Boolean).join(" · ")]));
+  repair.attempts.forEach(attempt => rows.push(["รอบการซ่อม",attempt.attempt_no,[attempt.attempt_at,R.tests[attempt.test_result],attempt.actions_taken,attempt.failure_reason].filter(Boolean).join(" · ")]));
+  repair.parts.forEach(part => rows.push(["อะไหล่",part.part_number,[part.part_name,part.quantity,part.part_status].filter(Boolean).join(" · ")]));
+  repair.quotes.forEach(quote => rows.push(["ใบเสนอราคา",quotationLabel(quote),[quote.quoted_at,quote.quoted_amount_thb,quote.quotation_status,quote.image_drive?.path || (isQuoteImage(quote.image_data_url) ? quoteImagePath(quote).path : "")].filter(Boolean).join(" · ")]));
+  return { name:repair.srn, rows };
+}
+
+function settingsReport() {
+  const rows = [["หมวด","รหัส","ข้อมูล"]];
+  for (const [label, values] of [["เกณฑ์แจ้งเตือน",state.settings],["สถานะ",state.statuses],["ช่าง",state.engineers],["ลูกค้า",state.customers]]) {
+    Object.entries(values).forEach(([key,value]) => rows.push([label,key,value]));
+  }
+  state.machines.forEach(machine => rows.push(["เครื่อง",machine.machine_id,[machine.brand,machine.model,machine.serial_number,state.customers[machine.customer_id]].join(" · ")]));
+  return { name:"master-data", rows };
+}
+
+function getReport(scope, key) {
+  if (scope === "dashboard" && isQuotationView()) {
+    const name = filters.quoteScope ? "quotations-" + filters.quoteScope : "quotations";
+    return { name, rows:[quotationColumns,...quotationRows().map(quotationCells)] };
+  }
+  if (scope === "dashboard" && !isAdmin()) return repairReport(dashboardSection() ? location.hash.slice(1) : "dashboard-repairs",dashboardRows());
+  if (scope === "admin") {
+    const rows = Object.hasOwn(adminFilters,adminTab) ? adminRows(adminTab) : state.repairs;
+    return repairReport("admin-repairs",rows);
+  }
+  if (scope === "monthly") return { name:"monthly-repairs", rows:[["เดือน","In-House","On-Site","รวม"],...monthlyTotals().map(row => [row.month,row.in_house,row.on_site,row.total])] };
+  if (scope === "month") return repairReport("repairs-" + key,monthlyRepairs(key));
+  if (scope === "settings") return settingsReport();
+  const repair = findRepair(key);
+  return repair ? detailReport(repair) : null;
+}
+
+function spreadsheetText(value) {
+  const text = String(value ?? "");
+  return typeof value === "string" && (/^[\t\r\n]/.test(text) || /^\s*[=+@-]/.test(text)) ? "'" + text : text;
+}
+function csvText(rows) {
+  return "\uFEFF" + rows.map(row => row.map(value => '"' + spreadsheetText(value).replace(/"/g,'""') + '"').join(",")).join("\r\n");
+}
+
+
+const safeFilename = value => String(value ?? "").replace(/[<>:"/\\|?*\u0000-\u001f]+/g,"-").replace(/^[ .]+|[ .]+$/g,"").slice(0,70) || "file";
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url),5000);
+}
+
+async function copyText(text) {
+  const value = text.trim();
+  if (!value) return notify("ไม่มีข้อความให้คัดลอก");
+  try {
+    await navigator.clipboard.writeText(value);
+  } catch {
+    const previous = document.activeElement;
+    const field = document.createElement("textarea");
+    field.className = "clipboard-field";
+    field.value = value;
+    const parent = dialog.open ? dialog : document.body;
+    parent.append(field);
+    field.select();
+    let copied = false;
+    try { copied = document.execCommand("copy"); }
+    catch { /* Clipboard access can be disabled by browser policy. */ }
+    finally { field.remove(); previous?.focus(); }
+    if (!copied) return notify("คัดลอกไม่ได้ กรุณาตรวจสิทธิ์คลิปบอร์ดของเบราว์เซอร์");
+  }
+  notify("คัดลอกแล้ว");
+}
+
+const driveUploads = new Set();
+const canUploadQuoteToDrive = () => typeof window.google?.script?.run?.withSuccessHandler === "function";
+
+function quoteDriveControls(repairId, quote) {
+  if (quote.image_drive || !canUploadQuoteToDrive()) return "";
+  const busy = driveUploads.has(quote.quotation_id);
+  return '<button type="button" class="button compact" data-upload-quote="' + esc(quote.quotation_id) +
+    '" data-repair="' + esc(repairId) + '"' + (busy ? ' disabled' : '') + '>' +
+    (busy ? 'กำลังอัปโหลด…' : 'อัปโหลดไป Google Drive') + '</button>';
+}
+
+async function uploadQuoteToDrive(repairId, quoteId) {
+  const repair = findRepair(repairId);
+  const quote = repair?.quotes.find(item => item.quotation_id === quoteId);
+  if (!canUploadQuoteToDrive() || !quote || quote.image_drive || !isQuoteImage(quote.image_data_url) || driveUploads.has(quoteId)) return;
+  const refresh = () => {
+    const latest = findRepair(repairId)?.quotes.find(item => item.quotation_id === quoteId);
+    for (const controls of document.querySelectorAll("[data-quote-drive-controls]")) {
+      if (latest && controls.dataset.quoteDriveControls === quoteId) controls.innerHTML = quoteDriveControls(repairId,latest);
+    }
+  };
+  driveUploads.add(quoteId);
+  refresh();
+  notify("บันทึกใบเสนอราคาแล้ว กำลังอัปโหลดรูปไป Google Drive…");
+  try {
+    const image = await new Promise((resolve,reject) => {
+      window.google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).uploadQuotationImage({
+        uploadId:quoteId, srn:quote.image_drive_srn || repair.srn,
+        customer:quote.image_drive_customer || state.customers[repair.customer_id],
+        date:R.bangkokDay(quote.quoted_at || quote.image_attached_at || R.today),
+        source:quote.image_data_url
+      });
+    });
+    if (!/^[a-zA-Z0-9_-]+$/.test(image?.id || "") || typeof image?.path !== "string") throw new Error("Invalid Drive result");
+    const next = copyState();
+    const stored = next.repairs.find(item => item.repair_id === repairId)?.quotes.find(item => item.quotation_id === quoteId);
+    if (stored) {
+      stored.image_drive = image;
+      try {
+        R.save(next);
+        state = next;
+      } catch {
+        notify("อัปโหลดรูปแล้ว แต่บันทึกลิงก์ในเบราว์เซอร์ไม่ได้ ลองอัปโหลดซ้ำจากรายละเอียดงาน");
+        return;
+      }
+    }
+    notify("อัปโหลดรูปไป Google Drive แล้ว");
+  } catch {
+    notify("อัปโหลดรูปไป Google Drive ไม่สำเร็จ ลองอัปโหลดซ้ำจากรายละเอียดงาน");
+  } finally {
+    driveUploads.delete(quoteId);
+    refresh();
+  }
+}
+
+let quoteFolder;
+const canChooseQuoteFolder = () => typeof window.showDirectoryPicker === "function" && window === window.top;
+
+function quoteImagePath(quote) {
+  const [year, month] = R.bangkokDay(quote.quoted_at || quote.image_attached_at || findRepair(quote.repair_id)?.reported_at || R.today).split("-");
+  const subtype = quote.image_data_url.match(/^data:image\/(jpeg|png|webp);/i)[1].toLowerCase();
+  const extension = subtype === "jpeg" ? "jpg" : subtype;
+  const filename = safeFilename(quote.image_archive_label ?? quote.quotation_number) + "-" + safeFilename(quote.quotation_id) + "." + extension;
+  return { year, month, filename, path:[year,month,filename].join("/") };
+}
+
+async function chooseQuoteFolder() {
+  if (!canChooseQuoteFolder()) {
+    notify("เลือกโฟลเดอร์ได้เมื่อเปิด Demo โดยตรงในเบราว์เซอร์ที่รองรับ เช่น Chrome หรือ Edge");
+    return null;
+  }
+  try {
+    quoteFolder = await window.showDirectoryPicker({ mode:"readwrite", id:"repair-quotation-images" });
+    const status = document.querySelector("#quote-folder-status");
+    if (status) status.textContent = quoteFolder.name + " / ปี / เดือน";
+    return quoteFolder;
+  } catch (error) {
+    if (error.name !== "AbortError") notify("เปิดโฟลเดอร์ไม่ได้ กรุณาตรวจสิทธิ์การเข้าถึง");
+    return null;
+  }
+}
+
+function quoteImageBytes(source) {
+  return Uint8Array.from(atob(source.split(",",2)[1]), character => character.charCodeAt(0));
+}
+
+async function writeQuoteImage(folder, quote) {
+  const { year, month, filename, path } = quoteImagePath(quote);
+  const bytes = quoteImageBytes(quote.image_data_url);
+  const yearFolder = await folder.getDirectoryHandle(year,{create:true});
+  const monthFolder = await yearFolder.getDirectoryHandle(month,{create:true});
+  const file = await monthFolder.getFileHandle(filename,{create:true});
+  const writer = await file.createWritable();
+  try {
+    await writer.write(bytes);
+    await writer.close();
+  } catch (error) {
+    await writer.abort().catch(() => {});
+    throw error;
+  }
+  return path;
+}
+
+async function saveQuoteImageToFolder(quote, choose = false) {
+  const folder = choose && !quoteFolder ? await chooseQuoteFolder() : quoteFolder;
+  if (!folder || !isQuoteImage(quote?.image_data_url)) return;
+  try {
+    const path = await writeQuoteImage(folder,quote);
+    notify("บันทึกรูปลง " + folder.name + "/" + path);
+  } catch {
+    if (quoteFolder === folder) quoteFolder = undefined;
+    notify("บันทึกรูปลงโฟลเดอร์ไม่ได้ รูปยังเปิดดูได้จากรายละเอียดงาน");
+  }
+}
+
+</script>
+<script>
+"use strict";
+
+const isLiveDatabase = () => document.body.dataset.liveDatabase === "true";
+let liveError = "";
+let liveBusy = false;
+const liveRequests = new WeakMap();
+
+function callRepairServer(method, ...args) {
+  return new Promise((resolve,reject) => {
+    const bridge = window.google?.script?.run;
+    if (!bridge) return reject(new Error("เปิดผ่าน URL /exec ของ Apps Script"));
+    bridge.withSuccessHandler(resolve).withFailureHandler(reject)[method](...args);
+  });
+}
+
+function acceptLiveState(data) {
+  if (!Array.isArray(data?.repairs) || !data.settings || !data.role) throw new Error("ข้อมูลที่ได้รับจาก Google Sheets ไม่ครบ");
+  state = { ...data, statuses:{...R.statuses,...data.statuses} };
+}
+
+function showLiveDatabaseStatus() {
+  const source = document.querySelector("#source-status");
+  source.textContent = liveError ? "เชื่อมต่อไม่ได้" : "กำลังโหลด Google Sheets";
+  app.innerHTML = '<section class="panel live-status"><h1>' + (liveError ? "เปิดฐานข้อมูลไม่ได้" : "กำลังโหลดข้อมูลจาก Google Sheets") + '</h1>' +
+    (liveError ? '<p class="subtitle">' + esc(liveError) + '</p><button class="button primary" data-action="reload-live-data">ลองใหม่</button>' : '') + '</section>';
+}
+
+async function loadLiveDatabase() {
+  if (liveBusy) return;
+  liveBusy = true;
+  liveError = "";
+  state = null;
+  render();
+  try {
+    acceptLiveState(await callRepairServer("getRepairDatabase"));
+  } catch (error) {
+    liveError = error.message || "กรุณาตรวจการตั้งค่า Apps Script และสิทธิ์ Google Sheets";
+  } finally {
+    liveBusy = false;
+    render();
+  }
+}
+
+async function saveLiveForm(form, values) {
+  const error = form.querySelector(".error");
+  if (liveBusy) {
+    error.textContent = "กำลังบันทึกคำขอก่อนหน้า";
+    error.hidden = false;
+    return;
+  }
+  const kind = form.dataset.form;
+  const operation = kind === "repair" ? (adminTab === "edit" ? "edit" : "create") : kind === "activity" ? activity : kind;
+  const repairId = operation === "edit" || kind === "activity" ? selectedId : form.dataset.repair || "";
+  const updatedAt = kind === "reopen" ? form.dataset.updatedAt : findRepair(repairId)?.updated_at || "";
+  const quoteId = form.dataset.key || "";
+  const fingerprint = JSON.stringify([operation,repairId,updatedAt,quoteId,values]);
+  let request = liveRequests.get(form);
+  if (request?.fingerprint !== fingerprint) {
+    request = { fingerprint,requestId:R.id() };
+    liveRequests.set(form,request);
+  }
+  liveBusy = true;
+  const button = form.querySelector('button[type="submit"]');
+  button.disabled = true;
+  error.hidden = true;
+  notify("กำลังบันทึกลง Google Sheets…");
+  try {
+    const saved = await callRepairServer("saveRepairDatabase",{operation,repairId,updatedAt,quoteId,values,requestId:request.requestId});
+    acceptLiveState(saved);
+    if (form.isConnected) {
+      if (kind === "repair") showSavedAdminRepair(values.srn);
+      if (kind === "reopen") showReopenedAdminRepair(repairId);
+      if (kind === "activity") activity = operation === "quote" && !values.quotation_number ? "quote" : "progress";
+      if (dialog.open) dialog.close();
+      render();
+    } else if (!document.querySelector("main form")) render();
+    notify(kind === "reopen" ? "เปิดงานอีกครั้งแล้ว" : "บันทึกลง Google Sheets แล้ว");
+  } catch (failure) {
+    const message = failure.message || "บันทึกลง Google Sheets ไม่สำเร็จ";
+    if (form.isConnected) {
+      error.textContent = message;
+      error.hidden = false;
+    }
+    notify(message);
+  } finally {
+    liveBusy = false;
+    button.disabled = false;
+  }
+}
+
+</script>
+<script>
+"use strict";
+
+function monthSummary() {
+  openDialog("สถิติการรับแจ้ง", "ตารางรายเดือน", exportButton("monthly") + '<div class="table-scroll" tabindex="0"><table><thead><tr><th scope="col">เดือน</th><th scope="col">In-House</th><th scope="col">On-Site</th><th scope="col">รวม</th></tr></thead><tbody>' +
+    monthlyTotals().map(row => '<tr><td><div class="row-copy"><button class="text-button" data-month="' + row.month + '">' + monthLabel(row.month) + '</button>' +
+      copyItemButton("คัดลอกยอดเดือน " + monthLabel(row.month),[monthLabel(row.month),"In-House " + row.in_house,"On-Site " + row.on_site,"รวม " + row.total].join("\n"),true) + '</div></td><td>' + row.in_house + '</td><td>' + row.on_site + '</td><td>' + row.total + '</td></tr>').join("") + '</tbody></table></div>');
+}
+function monthDetail(month) {
+  const rows = monthlyRepairs(month);
+  openDialog("งานที่รับแจ้งรายเดือน",monthLabel(month) + " · " + rows.length + " งาน",'<div class="data-actions"><button class="button compact" data-action="month-summary">ตารางรายเดือน</button>' + exportButton("month",month) + '</div>' +
+    records("รายการรับแจ้งซ่อม",rows,row => '<button class="text-button" data-open="' + esc(row.repair_id) + '">' + esc(row.srn) + '</button><p>' + esc(row.repair_id + " · " + state.customers[row.customer_id] + " · " + R.types[row.initial_service_type]) + '</p>'));
+}
+function clearFilters() {
+  Object.keys(filters).forEach(key => { filters[key] = ""; });
+  tablePage = 1;
+}
+function commit(form, next, message) {
+  try {
+    R.save(next);
+  } catch {
+    throw new Error("บันทึกไม่ได้ กรุณาตรวจสอบพื้นที่จัดเก็บของเบราว์เซอร์");
+  }
+  state = next;
+  if (dialog.open) dialog.close();
+  render();
+  notify(message);
+}
+function requireRule(condition, message) {
+  if (!condition) throw new Error(message);
+}
+function copyState() {
+  return JSON.parse(JSON.stringify(state));
+}
+
+function openReopenRepair(id) {
+  const row = findRepair(id);
+  if (row?.status !== "CLOSED") return;
+  const statuses = activeStatuses();
+  const closing = [...row.history].reverse().find(entry => entry.event_type === "ปิดงาน" && entry.new_value === "CLOSED");
+  const status = Object.hasOwn(statuses,closing?.old_value) ? closing.old_value : "PENDING_INSPECTION";
+  openDialog("จัดการงานซ่อม","ยืนยันเปิดงานอีกครั้ง",
+    '<p class="subtitle">' + esc(row.srn) + ' จะกลับมาบันทึกข้อมูลได้ และระบบจะเก็บข้อมูลการปิดครั้งเดิมไว้ในประวัติ</p>' +
+    '<form data-form="reopen" data-repair="' + esc(id) + '" data-updated-at="' + esc(row.updated_at || "") + '">' +
+    fields([pick("status","สถานะหลังเปิดงาน",statuses)],{status}) +
+    '<p class="error" role="alert" hidden></p><div class="actions">' +
+    '<button type="button" class="button" data-action="cancel-reopen">ยกเลิก</button>' +
+    '<button type="submit" class="button primary">' + icon("check") + ' ยืนยันเปิดงานอีกครั้ง</button></div></form>');
+}
+
+function saveReopenedRepair(form,values) {
+  const next = copyState();
+  const row = next.repairs.find(job => job.repair_id === form.dataset.repair);
+  requireRule(row?.status === "CLOSED","กรุณาเลือกงานที่ปิดแล้ว");
+  requireRule((row.updated_at || "") === form.dataset.updatedAt,"งานนี้มีการเปลี่ยนแปลง กรุณาเปิดหน้าต่างยืนยันใหม่");
+  requireRule(Object.hasOwn(activeStatuses(),values.status),"กรุณาเลือกสถานะหลังเปิดงาน");
+  const closureFields = ["closed_at","repair_completed_at","test_result","final_outcome","close_note","service_report_url"];
+  const previous = Object.fromEntries(closureFields.map(key => [key,row[key] ?? ""]));
+  const entry = R.history("เปิดงานอีกครั้ง","กลับมาดำเนินการต่อ",JSON.stringify({status:row.status,...previous,returned_to_customer_at:row.returned_to_customer_at || ""}),values.status);
+  row.history.push(entry);
+  closureFields.forEach(key => { row[key] = ""; });
+  row.status = values.status;
+  row.updated_at = entry.occurred_at;
+  showReopenedAdminRepair(row.repair_id);
+  commit(form,next,"เปิดงานอีกครั้งแล้ว");
+}
+
+const quoteImages = new WeakMap();
+
+async function updateQuoteImage(input) {
+  const file = input.files[0];
+  const form = input.form;
+  const status = form.querySelector("#quote-image-status");
+  const preview = form.querySelector(".quote-image-preview");
+  const picture = preview.querySelector("img");
+  const remove = form.querySelector('[data-action="clear-quote-image"]');
+
+  quoteImages.delete(input);
+  preview.hidden = true;
+  picture.removeAttribute("src");
+  remove.hidden = !file;
+  status.textContent = "";
+  status.classList.remove("error");
+  input.setCustomValidity("");
+  if (!file) return;
+  input.setCustomValidity("กำลังเตรียมรูปใบเสนอราคา");
+  status.textContent = "กำลังเตรียมรูป…";
+
+  try {
+    requireRule(quoteImageTypes.split(",").includes(file.type), "กรุณาเลือกรูป JPG, PNG หรือ WebP");
+    requireRule(file.size > 0 && file.size <= quoteImageMaxBytes, "รูปต้องมีขนาดไม่เกิน 1 MB และมีข้อมูล");
+    const source = await new Promise((resolve,reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("อ่านไฟล์รูปไม่ได้ กรุณาเลือกไฟล์อีกครั้ง"));
+      reader.readAsDataURL(file);
+    });
+    requireRule(isQuoteImage(source), "รูปแบบไฟล์ไม่ถูกต้อง");
+    const image = new Image();
+    image.src = source;
+    await image.decode().catch(() => { throw new Error("เปิดรูปไม่ได้ กรุณาเลือกไฟล์รูปที่สมบูรณ์"); });
+    if (!input.isConnected || input.files[0] !== file) return;
+    quoteImages.set(input,{ file, data:source });
+    picture.src = source;
+    preview.hidden = false;
+    status.textContent = file.name;
+    input.setCustomValidity("");
+  } catch (error) {
+    if (!input.isConnected || input.files[0] !== file) return;
+    status.textContent = error.message;
+    status.classList.add("error");
+    input.setCustomValidity(error.message);
+  }
+}
+
+function validateUrl(value) {
+  if (!value) return;
+  let url;
+  try { url = new URL(value); } catch {}
+  requireRule(url && ["https:","http:"].includes(url.protocol), "ลิงก์เอกสารต้องขึ้นต้นด้วย https:// หรือ http://");
+}
+function saveRepair(form, values) {
+  const next = copyState();
+  const editing = adminTab === "edit";
+  const current = editing ? next.repairs.find(row => row.repair_id === selectedId) : null;
+  requireRule(values.reported_at <= R.today, "วันที่รับแจ้งต้องไม่เกินวันนี้");
+  requireRule(!values.due_date || values.due_date >= values.reported_at, "กำหนดเสร็จต้องไม่ก่อนวันที่รับแจ้ง");
+  if (current?.status === "CLOSED") {
+    const completion = values.repair_completed_at ?? current.repair_completed_at;
+    requireRule(!current.repair_completed_at || completion, "กรุณาระบุวันที่ซ่อมเสร็จ");
+    if (completion) validateRepairCompletion(completion,values.reported_at);
+    else requireRule(!R.closedDay(current) || values.reported_at <= R.closedDay(current), "วันที่รับแจ้งต้องไม่หลังวันปิดงาน");
+  }
+  requireRule(!next.repairs.some(row => row.repair_id !== current?.repair_id && row.srn.toLowerCase() === values.srn.toLowerCase()), "เลขที่ SRN นี้มีอยู่แล้ว");
+  const customerName = values.customer_name?.trim();
+  const serial = values.serial_number?.trim() || "";
+  const { brand, model } = values;
+  requireRule(customerName, "กรุณากรอกชื่อลูกค้า");
+  const assigned_engineer_id = values.assigned_engineer_id ?? current?.assigned_engineer_id ?? "";
+  const secondary_engineer_id = values.secondary_engineer_id ?? current?.secondary_engineer_id ?? "";
+  requireRule([assigned_engineer_id,secondary_engineer_id].every(id => !id || Object.hasOwn(next.engineers,id)), "กรุณาเลือกช่างผู้รับผิดชอบจากรายการ");
+  requireRule(!secondary_engineer_id || assigned_engineer_id, "กรุณาเลือกช่างผู้รับผิดชอบคนแรกก่อน");
+  requireRule(!secondary_engineer_id || secondary_engineer_id !== assigned_engineer_id, "ช่างผู้รับผิดชอบทั้งสองคนต้องเป็นคนละคน");
+  requireRule(brand && model?.trim() && (isOtherBrand(brand) || Object.hasOwn(machineChoices("model",brand),model)), "กรุณาระบุยี่ห้อและรุ่นของเครื่อง");
+  String(values.attachments || "").split(/\s+/).filter(Boolean).forEach(validateUrl);
+
+  const existingMachine = !serial ? null : current && lookupKey(current.serial_number) === lookupKey(serial)
+    ? next.machines.find(machine => machine.machine_id === current.machine_id) || findMachineBySerial(next,serial)
+    : findMachineBySerial(next,serial);
+  const customers = Object.entries(next.customers).filter(([,name]) => lookupKey(name) === lookupKey(customerName));
+  const existingCustomer = customers.find(([id]) => id === existingMachine?.customer_id)
+    || customers.find(([id]) => id === current?.customer_id) || customers[0];
+  const customer_id = existingCustomer?.[0] || "CUS-" + R.id();
+  requireRule(!existingMachine || existingMachine.customer_id === customer_id, "Serial Number นี้อยู่ในข้อมูลของลูกค้ารายอื่น กรุณาตรวจสอบชื่อลูกค้า");
+
+  if (!existingCustomer) next.customers[customer_id] = customerName;
+  const machine_id = serial ? existingMachine?.machine_id || "MCH-" + R.id() : "";
+  const serial_number = existingMachine && machine_id === current?.machine_id ? current.serial_number : existingMachine?.serial_number || serial;
+  if (serial && !existingMachine) next.machines.push({ machine_id, customer_id, brand, model, serial_number });
+
+  const now = new Date().toISOString();
+  const { edit_reason, customer_name, status, closed_at, ...changes } = values;
+  if (current?.status === "CLOSED") validateUrl(changes.service_report_url);
+  const data = { ...changes, ...(!editing ? {status} : {}), customer_id, machine_id, serial_number, assigned_engineer_id, secondary_engineer_id, updated_at:now };
+  if (current) {
+    const keys = Object.keys(data).filter(key => key !== "updated_at" && String(current[key] ?? "") !== String(data[key] ?? ""));
+    if (keys.includes("current_location_type")) current.history.push(R.history("ย้ายสถานที่",edit_reason,current.current_location_type,data.current_location_type));
+    const oldValues = Object.fromEntries(keys.map(key => [key,current[key] ?? ""]));
+    const newValues = Object.fromEntries(keys.map(key => [key,data[key] ?? ""]));
+    current.history.push(R.history("แก้ไขข้อมูลงาน",edit_reason,JSON.stringify(oldValues),JSON.stringify(newValues)));
+    Object.assign(current,data);
+  } else {
+    const year = R.today.slice(0,4);
+    const number = next.repairs.reduce((maximum,row) => row.repair_id.startsWith("REP-" + year + "-") ? Math.max(maximum,Number(row.repair_id.split("-")[2])) : maximum, 0) + 1;
+    next.repairs.push({ ...data, repair_id:"REP-" + year + "-" + String(number).padStart(5,"0"), created_at:now, history:[R.history("เปิดงาน","รับแจ้งซ่อม","",data.status)], attempts:[], visits:[], quotes:[], parts:[] });
+  }
+  showSavedAdminRepair(values.srn);
+  commit(form,next,editing ? "บันทึกการแก้ไขแล้ว" : "เปิดงานซ่อมแล้ว");
+}
+function validateRepairCompletion(completion, reported) {
+  requireRule(completion && completion >= R.bangkokDay(reported) && completion <= R.today, "วันที่ซ่อมเสร็จต้องอยู่ระหว่างวันที่รับแจ้งถึงวันนี้");
+}
+
+function saveActivity(form, values) {
+  const next = copyState();
+  const row = next.repairs.find(item => item.repair_id === selectedId);
+  requireRule(row && R.active(row), "กรุณาเลือกงานที่ยังเปิดอยู่");
+  let entry;
+  let savedQuote;
+  if (activity === "progress") {
+    entry = R.history(values.status === row.status ? "บันทึกความคืบหน้า" : "เปลี่ยนสถานะ",values.note,row.status,values.status);
+    const { note, ...changes } = values;
+    Object.assign(row,changes);
+  } else if (activity === "visit") {
+    requireRule(values.follow_up_required !== "yes" || values.next_visit_at, "ระบุวันนัดครั้งต่อไปเมื่อเลือกว่าต้องเข้าซ้ำ");
+    const location = values.site_location?.trim() || R.locations[row.current_location_type] || "ไม่ระบุสถานที่";
+    row.visits.push({ ...values, site_location:location, visit_id:R.id(), repair_id:row.repair_id, follow_up_required:values.follow_up_required === "yes" });
+    entry = R.history("เพิ่มการเข้าบริการ",location + " · " + date(values.scheduled_visit_at));
+  } else if (activity === "attempt") {
+    requireRule(values.test_result !== "FAIL" || values.failure_reason, "ระบุสาเหตุที่ซ่อมไม่สำเร็จ");
+    requireRule(values.failure_reason !== "อื่น ๆ" || values.failure_note, "ระบุรายละเอียดสาเหตุอื่น ๆ");
+    const attempt_no = row.attempts.length + 1;
+    row.attempts.push({ ...values, attempt_id:R.id(), repair_id:row.repair_id, attempt_no, created_at:new Date().toISOString(), created_by:"Admin Demo" });
+    entry = R.history("เพิ่มรอบการซ่อม","ครั้งที่ " + attempt_no + " · " + R.tests[values.test_result] + "\n" + values.actions_taken);
+  } else if (activity === "transfer") {
+    requireRule(values.current_location_type !== row.current_location_type, "กรุณาเลือกสถานที่ใหม่");
+    entry = R.history("ย้ายสถานที่",values.note,row.current_location_type,values.current_location_type);
+    row.current_location_type = values.current_location_type;
+
+  } else if (activity === "quote") {
+    savedQuote = { ...values, repair_id:row.repair_id, quotation_id:R.id() };
+    if (savedQuote.image_data_url) {
+      savedQuote.image_attached_at = new Date().toISOString();
+      savedQuote.image_archive_label = savedQuote.quotation_number || "quotation";
+      savedQuote.image_drive_srn = row.srn;
+      savedQuote.image_drive_customer = next.customers[row.customer_id];
+    }
+    row.quotes.push(savedQuote);
+    entry = R.history("เพิ่มใบเสนอราคา",quotationLabel(savedQuote));
+  } else if (activity === "close") {
+    validateRepairCompletion(values.repair_completed_at,row.reported_at);
+    validateUrl(values.service_report_url);
+    entry = R.history("ปิดงาน",values.close_note,row.status,"CLOSED");
+    Object.assign(row,values,{ status:"CLOSED", closed_at:new Date().toISOString() });
+  }
+  row.history.push(entry);
+  row.updated_at = entry.occurred_at;
+  activity = savedQuote && !savedQuote.quotation_number ? "quote" : "progress";
+  commit(form,next,"บันทึกการดำเนินงานแล้ว");
+  return savedQuote;
+}
+function openQuoteNumber(repairId,quoteId) {
+  const row = findRepair(repairId);
+  const quote = row?.quotes.find(item => item.quotation_id === quoteId);
+  if (!row || !R.active(row) || !quote || quote.quotation_number) return;
+  openDialog("ใบเสนอราคา", "กรอกเลขใบเสนอราคา",
+    '<p class="subtitle">' + esc([row.srn,quote.quoted_at ? date(quote.quoted_at) : "",quoteCurrency.format(quote.quoted_amount_thb)].filter(Boolean).join(" · ")) + '</p>' +
+    '<form class="quote-number-form" data-form="quote-number" data-repair="' + esc(repairId) + '" data-key="' + esc(quoteId) + '">' +
+    fields([["quotation_number","เลขใบเสนอราคา","text",true]]) + formFooter("บันทึกเลขใบเสนอราคา") + '</form>');
+}
+
+function saveQuoteNumber(form, values) {
+  const next = copyState();
+  const row = next.repairs.find(item => item.repair_id === form.dataset.repair);
+  const quote = row?.quotes.find(item => item.quotation_id === form.dataset.key);
+  requireRule(row && R.active(row) && quote && !quote.quotation_number, "ไม่พบใบเสนอราคาที่ยังรอเลขในงานที่เปิดอยู่");
+  const number = values.quotation_number?.trim();
+  requireRule(number, "กรุณากรอกเลขใบเสนอราคา");
+  if (quote.image_data_url && quote.image_archive_label === undefined) quote.image_archive_label = "file";
+  quote.quotation_number = number;
+  const entry = R.history("กรอกเลขใบเสนอราคา",number);
+  row.history.push(entry);
+  row.updated_at = entry.occurred_at;
+  commit(form,next,"บันทึกเลขใบเสนอราคาแล้ว");
+}
+
+function saveSettings(form, values) {
+  const next = copyState();
+  if (form.dataset.form === "thresholds") {
+    const keys = ["watch","repeated","manager","critical"];
+    const levels = keys.map(key => +values[key]);
+    requireRule(levels.every((level,index) => Number.isSafeInteger(level) && level > (levels[index - 1] || 0)), "กำหนดเกณฑ์เป็นจำนวนเต็มและเรียงจากน้อยไปมาก");
+    next.settings = Object.fromEntries(keys.map((key,index) => [key,levels[index]]));
+  } else if (form.dataset.form === "status-label") {
+    next.statuses[values.code] = values.label;
+  } else if (form.dataset.form === "engineer") {
+    next.engineers["TEC-" + R.id()] = values.name;
+  } else if (form.dataset.form === "customer") {
+    next.customers["CUS-" + R.id()] = values.name;
+  } else if (form.dataset.form === "machine") {
+    requireRule(!next.machines.some(m => m.serial_number.toLowerCase() === values.serial_number.toLowerCase()), "Serial Number นี้มีอยู่แล้ว");
+    next.machines.push({ ...values, machine_id:"MCH-" + R.id() });
+  }
+  commit(form,next,"บันทึกข้อมูลหลักแล้ว");
+}
+
+document.addEventListener("click", event => {
+  const target = event.target.closest("button, a, [data-open]");
+  if (!target) return;
+  const action = target.dataset;
+  if (action.action === "reload-live-data") return loadLiveDatabase();
+  if (action.exportView) {
+    const report = getReport(action.exportView,action.key);
+    if (!report) return;
+    downloadBlob(new Blob([csvText(report.rows)],{type:"text/csv;charset=utf-8"}),safeFilename(report.name) + "-" + R.today + ".csv");
+    return notify("ส่งออก CSV แล้ว");
+  }
+  if (Object.hasOwn(action,"copyItem")) {
+    if (Object.hasOwn(action,"copyText")) return copyText(action.copyText);
+    const content = target.closest(".copyable-item").querySelector(".copy-content");
+    return copyText((content.querySelector(".record-text") || content).innerText);
+  }
+  if (action.fillQuoteNumber) return openQuoteNumber(action.repair,action.fillQuoteNumber);
+  if (action.quoteImage) return openQuoteImage(action.key,action.quoteImage);
+  if (action.uploadQuote) return uploadQuoteToDrive(action.repair,action.uploadQuote);
+  if (action.archiveQuote) {
+    const quote = findRepair(action.key)?.quotes.find(quote => quote.quotation_id === action.archiveQuote);
+    return saveQuoteImageToFolder(quote,true);
+  }
+  if (action.action === "choose-quote-folder") return chooseQuoteFolder();
+  if (action.reopenJob) return openReopenRepair(action.reopenJob);
+  if (action.action === "cancel-reopen") return dialog.close();
+  if (action.action === "change-update-job") {
+    selectedId = "";
+    resetAdminFilters("update");
+    activity = "progress";
+    render();
+    document.querySelector("#update-job-query").focus();
+    return;
+  }
+  if (action.action === "reset-admin-filters") {
+    resetAdminFilters(adminTab);
+    render();
+    document.querySelector('[data-admin-filter="query"]')?.focus({preventScroll:true});
+    return;
+  }
+  if (action.adminPage) {
+    adminPage = Number(action.adminPage);
+    adminResults();
+    (document.querySelector('[data-admin-page]:not(:disabled)') || document.querySelector("#admin-query"))?.focus({preventScroll:true});
+    return;
+  }
+  if (action.action === "clear-quote-image") {
+    const input = target.form.elements.quote_image;
+    input.value = "";
+    updateQuoteImage(input);
+    input.focus();
+    return;
+  }
+  if (action.open) return detail(action.open);
+  if (action.month) return monthDetail(action.month);
+  if (action.action === "month-summary") return monthSummary();
+  if (action.action === "chart-range") {
+    return openDialog("จำนวนการแจ้งซ่อมรายเดือน","เลือกช่วงเดือน",'<form data-form="chart">' + fields([["start","เริ่มเดือน","month",true],["end","ถึงเดือน","month",true]],chart) + formFooter("ใช้ช่วงเดือน") + '</form>');
+  }
+  if (action.metric || action.dashboardStatus) {
+    clearFilters();
+    filters.status = action.dashboardStatus || (action.metric === "closed" ? "CLOSED" : "");
+    if (Object.hasOwn(flagChecks,action.metric)) filters.flag = action.metric;
+    render();
+    document.querySelector("#repair-list h2")?.focus();
+    return;
+  }
+  if (action.action === "clear-filters") {
+    clearFilters();
+    render();
+    document.querySelector('[data-filter="query"]')?.focus({preventScroll:true});
+  } else if (action.page) {
+    tablePage = +action.page;
+    table();
+    (document.querySelector('[data-page]:not(:disabled)') || document.querySelector('[data-filter="query"]'))?.focus({ preventScroll:true });
+  } else if (action.adminTab || action.edit || action.update || action.activity) {
+    if (action.adminTab) adminTab = action.adminTab;
+    if (action.edit || action.update) {
+      selectedId = action.edit || action.update;
+      adminTab = action.edit ? "edit" : "update";
+      activity = "progress";
+    }
+    if (action.activity) activity = action.activity;
+    render();
+    if (action.edit) document.querySelector("#repair-form-title")?.focus();
+    if (action.update) document.querySelector("#update-job-title")?.focus();
+  }
+});
+document.addEventListener("change", event => {
+  const field = event.target;
+  if (field.name === "quote_image") return updateQuoteImage(field);
+  if (field.dataset.adminFilter && field.dataset.adminFilter !== "query") setAdminFilter(field.dataset.adminFilter,field.value);
+  if (field.dataset.filter && field.dataset.filter !== "query") {
+    filters[field.dataset.filter] = field.value;
+    tablePage = 1;
+    table();
+  }
+  if (field.id === "chart-type") {
+    chart.type = field.value;
+    document.querySelector("#monthly-panel").innerHTML = monthlyPanel();
+    document.querySelector("#chart-type").focus();
+  }
+  if (field.form?.dataset.form === "repair") {
+    if (field.name === "initial_service_type" && adminTab === "new") field.form.elements.current_location_type.value = field.value;
+    if (field.name === "brand") {
+      delete field.form.dataset.suggestedMachine;
+      syncRepairModels(field.form,"");
+    }
+    if (field.name === "serial_number") syncRepairSerial(field.form);
+    if (["current_location_type","initial_service_type"].includes(field.name)) syncRepairLocation(field.form);
+  }
+});
+document.addEventListener("input", event => {
+  if (event.target.dataset.filter === "query") {
+    filters.query = event.target.value;
+    tablePage = 1;
+    table();
+  }
+  if (event.target.dataset.adminFilter === "query") setAdminFilter("query",event.target.value);
+  if (event.target.form?.querySelector(".error")) event.target.form.querySelector(".error").hidden = true;
+});
+document.addEventListener("submit", event => {
+  const form = event.target;
+  if (!form.dataset.form) return;
+  event.preventDefault();
+  if (!form.isConnected) return;
+  const error = form.querySelector(".error");
+  const values = Object.fromEntries([...new FormData(form)]
+    .filter(([,value]) => typeof value === "string")
+    .map(([key,value]) => [key,value.trim()]));
+  try {
+    requireRule(Array.from(form.querySelectorAll("[required]:not(:disabled)")).every(field => values[field.name]), "กรุณากรอกข้อมูลที่จำเป็นให้ครบ");
+    if (form.dataset.form === "chart") {
+      requireRule(values.start <= values.end && values.end <= R.month && values.end <= R.shiftMonth(values.start,23), "เลือกช่วงไม่เกิน 24 เดือน และสิ้นสุดไม่เกินเดือนปัจจุบัน");
+      Object.assign(chart,values);
+      dialog.close();
+      document.querySelector("#monthly-panel").innerHTML = monthlyPanel();
+      document.querySelector('[data-action="chart-range"]').focus();
+      return;
+    }
+    if (form.dataset.form === "activity") {
+      const input = form.elements.quote_image;
+      const file = input?.files[0];
+      if (file) {
+        const attachment = quoteImages.get(input);
+        requireRule(attachment?.file === file, "กรุณารอให้รูปตัวอย่างแสดงก่อนบันทึก");
+        values.image_name = file.name;
+        values.image_data_url = attachment.data;
+      }
+    }
+    if (isLiveDatabase()) return saveLiveForm(form,values);
+    if (form.dataset.form === "repair") saveRepair(form,values);
+    else if (form.dataset.form === "reopen") saveReopenedRepair(form,values);
+    else if (form.dataset.form === "quote-number") saveQuoteNumber(form,values);
+    else if (form.dataset.form === "activity") {
+      const savedQuote = saveActivity(form,values);
+      if (savedQuote?.image_data_url) {
+        if (canUploadQuoteToDrive()) uploadQuoteToDrive(savedQuote.repair_id,savedQuote.quotation_id);
+        else saveQuoteImageToFolder(savedQuote);
+      }
+    } else saveSettings(form,values);
+  } catch (failure) {
+    error.textContent = failure.message;
+    error.hidden = false;
+  }
+});
+
+</script>
+</body>
+</html>
