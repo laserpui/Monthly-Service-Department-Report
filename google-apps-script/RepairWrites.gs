@@ -7,6 +7,7 @@ function saveRepairDatabase(request) {
     const db = readRepairDatabase_();
     const role = repairUserRole_(db,email);
     repairCheck_(role === 'ADMIN','บัญชีนี้ไม่มีสิทธิ์บันทึก');
+    requireRepairAdminSession_(request.adminToken,email);
     const prior = db.Request_Log.rows.find(row => row.request_id === request.requestId);
     if (prior) {
       repairCheck_(prior.actor === email && prior.operation === request.operation,'รหัสคำขอซ้ำ');

@@ -27,6 +27,13 @@ Apps Script อนุญาตเว็บจาก `https://laserpui.github.io`
 
 หากหน้าเว็บแจ้งว่าเปิดฐานข้อมูลไม่ได้ ให้กด **ตรวจสิทธิ์บัญชี Google** จากนั้นกลับมาแท็บเดิมแล้วกด **ลองใหม่** การเชื่อมต่ออาศัยเซสชัน Google ในเบราว์เซอร์และการอนุญาตให้ใช้เซสชันนั้นในเฟรมของเว็บ
 
+## รหัสเข้า Admin สำหรับระบบงานซ่อม
+
+- ใน Apps Script เปิด **Project Settings → Script Properties** และเพิ่ม `REPAIR_ADMIN_PASSWORD` โดยใช้รหัสที่กำหนด อย่าใส่ค่ารหัสในไฟล์เว็บหรือ GitHub
+- เพิ่ม `AdminAccess.gs` และอัปเดต `RepairWrites.gs`, `QuotationDrive.gs`, `Bridge.html` และ `Index.html` ในโปรเจกต์ Apps Script เดิม
+- เผยแพร่ Apps Script เวอร์ชันใหม่ที่ deployment เดิมควบคู่กับการอัปโหลด `app.js`, `events.js`, `live.js` และ `output.js` ไปที่ GitHub Pages เว็บและ Apps Script ต้องใช้เวอร์ชันที่รองรับรหัส Admin ทั้งคู่ก่อนเริ่มบันทึก
+- เปิด Admin ด้วยบัญชี Google ที่มีบทบาท `ADMIN` แล้วกรอกรหัส เซสชันมีอายุสูงสุด 1 ชั่วโมงและต้องกรอกใหม่เมื่อรีเฟรชหน้า Dashboard และหน้าอ่านข้อมูลยังเปิดด้วยสิทธิ์เดิม
+
 ## โหมด Demo
 
 เปิด `demo.html` เพื่อทดลองด้วยข้อมูลจำลอง ไฟล์นี้เป็นต้นทางสำหรับสร้างทั้ง `index.html` และ `google-apps-script/Index.html` ด้วยคำสั่ง `node scripts/build-apps-script.cjs`

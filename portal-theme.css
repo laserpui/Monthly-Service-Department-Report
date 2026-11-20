@@ -1,0 +1,133 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap");
+
+.portal-module {
+  --portal-font: "Noto Sans Thai", Tahoma, sans-serif;
+  --portal-ink: #172841;
+  --portal-muted: #586980;
+  --portal-line: #dce6eb;
+  --portal-teal: #087a76;
+  --portal-dark: #076761;
+  --portal-pale: #dcf4ef;
+  --portal-panel: rgba(255,255,255,.71);
+  --portal-shadow: 0 8px 30px rgba(31,62,81,.055);
+  color-scheme: light;
+}
+
+.portal-module body {font-family:var(--portal-font);color:var(--portal-ink)}
+.portal-module :focus-visible {outline:2px solid #168e89;outline-offset:2px}
+.portal-products body > .pointer-events-none {display:none}
+.portal-products body > .flex.flex-col.overflow-hidden {max-width:none;padding:8px;gap:12px}
+.portal-products body header,
+.portal-products body main > .backdrop-blur-md,
+.portal-products body footer {
+  background:var(--portal-panel);border-color:var(--portal-line);box-shadow:var(--portal-shadow)
+}
+.portal-products body header h1 {color:var(--portal-ink);background:none;font-weight:800}
+.portal-products body header .bg-gradient-to-tr,
+.portal-products body #exportBtn {background:var(--portal-teal);box-shadow:none}
+.portal-products body #exportBtn:hover {background:var(--portal-dark)}
+.portal-products body #refreshBtn {background:#fff;border-color:var(--portal-line);color:var(--portal-dark)}
+.portal-products body #refreshBtn:hover {background:var(--portal-pale)}
+.portal-products body #tableHead,
+.portal-products body #tableHead th {background:#edf5f6;color:var(--portal-muted)}
+.portal-products body #tableHead th[class~="text-blue-700"],
+.portal-products body #tableBody td[class~="text-blue-700"] {
+  background:var(--portal-pale);color:var(--portal-dark)
+}
+.portal-products body #tableBody tr {border-color:var(--portal-line)}
+.portal-products body #tableBody tr:hover {background:#e8f6f3}
+.portal-products body #tableBody a {color:var(--portal-dark)}
+.portal-products body :is(#searchInput,#searchInput2,#clearDateBtn,.copy-btn) {
+  background:#fff;border-color:var(--portal-line)
+}
+.portal-products body :is(#clearDateBtn,.copy-btn):hover {
+  background:var(--portal-pale);border-color:#b9dcd6;color:var(--portal-dark)
+}
+.portal-products body :is(#searchInput,#searchInput2):focus,
+.portal-products body div:has(> :is(#startDateInput,#endDateInput):focus) {
+  border-color:var(--portal-teal);box-shadow:0 0 0 3px rgba(8,122,118,.13)
+}
+.portal-products body :is(.text-indigo-900,.text-indigo-500,#clearDateBtn) {
+  color:var(--portal-dark)
+}
+.portal-products body #loadingIndicator .animate-spin {border-color:var(--portal-teal);border-top-color:transparent}
+
+.portal-service-debtors {
+  --font-main:var(--portal-font);--font:var(--portal-font);
+  --text-dark:var(--portal-ink);--text-light:var(--portal-muted);
+  --c-dark:var(--portal-ink);--c-med:var(--portal-muted);--c-light:var(--portal-muted);
+  --accent:var(--portal-teal);--accent-hover:var(--portal-dark);--accent-h:var(--portal-dark);
+  --glass-bg:var(--portal-panel);--card-bg:var(--portal-panel);
+  --card-border:var(--portal-line);--glass-border:var(--portal-line);--glass-shadow:var(--portal-shadow)
+}
+:is(.portal-products,.portal-service-debtors) body {
+  background:radial-gradient(ellipse at 26% 2%,#e5ffff,transparent 55%),
+    linear-gradient(128deg,#e5ffff 0%,#ffffe6 53%,#ffe6ff 100%);
+  background-attachment:fixed;
+  animation:none
+}
+.portal-service-debtors .bg-blob {display:none}
+.portal-service-debtors .main-wrap {max-width:none;padding:0 2px 12px}
+.portal-service-debtors :is(.header,.footer,.stat-card,.table-section,.filter-bar,.form-card) {
+  background:var(--portal-panel);border:1px solid var(--portal-line);box-shadow:var(--portal-shadow)
+}
+.portal-service-debtors :is(.header,.table-section,.form-card) {border-radius:24px}
+.portal-service-debtors :is(.header-title,.lock-title) {color:var(--portal-ink);text-shadow:none}
+.portal-service-debtors :is(.header-subtitle,.footer,.lock-sub,.lock-back) {color:var(--portal-muted)}
+.portal-service-debtors .footer-highlight {color:var(--portal-dark)}
+.portal-service-debtors :is(.header-icon,.btn-accent,.btn-success,.btn-success-g,.lock-icon,.lock-btn) {
+  background:var(--portal-teal);color:#fff;box-shadow:none
+}
+.portal-service-debtors :is(.btn-accent,.btn-success,.btn-success-g,.lock-btn):hover {background:var(--portal-dark)}
+.portal-service-debtors :is(.btn-glass,.tab-btn.inactive) {
+  background:#fff;color:var(--portal-ink);border:1px solid var(--portal-line)
+}
+.portal-service-debtors :is(.btn-glass:hover,.tab-btn.inactive:hover,.tab-btn.active) {
+  background:var(--portal-pale);color:var(--portal-dark);border:1px solid #b9dcd6;box-shadow:none
+}
+.portal-service-debtors .stat-icon {box-shadow:none}
+.portal-service-debtors .stat-icon.purple,
+.portal-service-debtors .stat-icon.emerald {background:#dcf4ef;color:#076761}
+.portal-service-debtors .stat-icon.blue {background:#e0ecff;color:#214e9f}
+.portal-service-debtors .stat-icon.amber {background:#fff0d5;color:#855307}
+.portal-service-debtors .search-box > :is(i,svg) {
+  position:absolute;inset:50% auto auto 12px;transform:translateY(-50%);
+  width:18px;height:18px;color:var(--portal-muted);pointer-events:none
+}
+.portal-service-debtors :is(.search-box input,.date-group input,.form-input,.form-select,.btn-outline,.copy-btn) {
+  border-color:var(--portal-line)
+}
+.portal-service-debtors :is(.search-box input,.date-group input,.form-input,.form-select):focus {
+  border-color:var(--portal-teal);box-shadow:0 0 0 3px rgba(8,122,118,.13)
+}
+.portal-service-debtors .btn-outline {background:#fff;color:var(--portal-ink)}
+.portal-service-debtors .btn-outline:hover {background:var(--portal-pale);color:var(--portal-dark)}
+.portal-service-debtors thead th {background:#edf5f6;color:var(--portal-muted);border-color:var(--portal-line)}
+.portal-service-debtors tbody tr {border-color:var(--portal-line)}
+.portal-service-debtors tbody tr:nth-child(even),
+.portal-service-debtors tbody tr:nth-child(even) .sticky-col {background:#f5faf9}
+.portal-service-debtors tbody tr:hover,
+.portal-service-debtors tbody tr:hover .sticky-col {background:#e8f6f3}
+.portal-service-debtors .lock-overlay {
+  background:linear-gradient(128deg,#e5ffff,#ffffe6 53%,#ffe6ff);animation:none
+}
+.portal-service-debtors .lock-card {
+  background:var(--portal-panel);border-color:var(--portal-line);box-shadow:var(--portal-shadow)
+}
+.portal-service-debtors .lock-input {background:#fff;color:var(--portal-ink);border-color:var(--portal-line)}
+.portal-service-debtors .lock-input:focus {background:#fff;border-color:var(--portal-teal)}
+.portal-service-debtors .lock-input::placeholder {color:var(--portal-muted)}
+.portal-service-debtors .lock-back:hover {color:var(--portal-dark)}
+
+@media(max-width:640px) {
+  .portal-products body > .flex.flex-col.overflow-hidden {gap:8px}
+  .portal-products body header {gap:8px}
+  .portal-service-debtors .header-actions {justify-content:flex-start}
+  .portal-service-debtors .stat-card {min-width:0}
+  .portal-service-debtors .stat-value {overflow-wrap:anywhere}
+}
+@media(prefers-reduced-motion:reduce) {
+  .portal-module *, .portal-module *::before, .portal-module *::after {
+    animation-duration:.01ms!important;transition:none!important
+  }
+}

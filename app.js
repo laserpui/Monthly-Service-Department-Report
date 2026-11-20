@@ -6,6 +6,7 @@ const app = document.querySelector("#app");
 const dialog = document.querySelector("#dialog");
 const dialogBody = document.querySelector("#dialog-body");
 const paths = {
+  box:'<path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Zm0 9 8-4.5M12 12 4 7.5M12 12v9M8 5.25l8 4.5"/>',
   wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-7 7a2.1 2.1 0 0 1-3-3l7-7a6 6 0 0 1 7.9-7.9z"/>',
   layout:'<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
   settings:'<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2" fill="white"/><circle cx="15" cy="17" r="2" fill="white"/>',
@@ -47,23 +48,64 @@ const assignedEngineerNames = repair => [repair.assigned_engineer_id,repair.seco
 const assignedEngineer = repair => assignedEngineerNames(repair).join(" · ") || "ยังไม่จ่ายงาน";
 const isAdmin = () => location.hash === "#admin";
 
+const portalModules = new Map([
+  ["products", { title:"ข้อมูลผลิตภัณฑ์", icon:"box", path:"ข้อมูลผลิตภัณฑ์/ข้อมูลผลิตภัณฑ์.html" }],
+  ["service-debtors", { title:"รายการลูกหนี้ Service", icon:"receipt", path:"รายการลูกหนี้ Service/index.html" }]
+]);
+const portalAvailable = () => !isLiveDatabase() || Boolean(document.body.dataset.scriptUrl);
+const portalFrames = new Map();
+
+function showPortalModule(route, module, host) {
+  if (!portalFrames.has(route)) {
+    const frame = document.createElement("iframe");
+    frame.className = "portal-frame portal-frame-" + route;
+    frame.title = module.title;
+    frame.addEventListener("load", () => {
+      const page = frame.contentDocument;
+      if (!page?.head || page.querySelector("#portal-theme")) return;
+      page.documentElement.classList.add("portal-module", "portal-" + route);
+      const theme = page.createElement("link");
+      theme.id = "portal-theme";
+      theme.rel = "stylesheet";
+      theme.href = new URL("portal-theme.css", document.baseURI).href;
+      page.head.append(theme);
+    });
+    frame.src = module.path.split("/").map(encodeURIComponent).join("/");
+    portalFrames.set(route, frame);
+    host.append(frame);
+  }
+  for (const [key, frame] of portalFrames) frame.hidden = key !== route;
+}
+
 function render() {
-  if (isLiveDatabase() && !state) return showLiveDatabaseStatus();
+  const portalEnabled = portalAvailable();
+  const requestedRoute = location.hash.slice(1);
+  const module = portalEnabled && portalModules.get(requestedRoute);
+  const portal = document.querySelector("#portal-view");
+  document.querySelector("#portal-links").hidden = !portalEnabled;
+  portal.hidden = !module;
+  app.hidden = Boolean(module);
+  document.querySelector("#source-status").hidden = Boolean(module);
+  document.querySelector("#refresh-db").hidden = Boolean(module) || !isLiveDatabase() || !state;
   const section = dashboardSection();
-  const canUseAdmin = !isLiveDatabase() || state.role === "ADMIN";
-  if (isLiveDatabase()) {
+  const canUseAdmin = !isLiveDatabase() || state?.role === "ADMIN";
+  if (isLiveDatabase() && state) {
     document.querySelector("#source-status").textContent = "Google Sheets";
-    document.querySelector("#refresh-db").hidden = false;
     document.querySelector(".side-footer small").textContent = "ข้อมูลจริง";
   }
-  const route = isAdmin() ? "admin" : section ? location.hash.slice(1) : "dashboard";
+  const route = module || section || isAdmin() ? requestedRoute : "dashboard";
   document.querySelectorAll("[data-route]").forEach(link => {
-    if (link.dataset.route === "admin") link.hidden = !canUseAdmin;
     if (link.dataset.route === route) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
-  document.querySelector("#breadcrumb").textContent = isAdmin() ? "Admin" : section?.title || "Dashboard";
-  app.innerHTML = isAdmin() ? (canUseAdmin ? admin() : '<section class="panel"><h1>บัญชีนี้มีสิทธิ์ดูข้อมูล</h1></section>') : section ? repairIndex(section) : dashboard();
+  document.querySelector("#breadcrumb").textContent = module?.title || (isAdmin() ? "Admin" : section?.title || "Dashboard");
+  if (module) return showPortalModule(route, module, portal);
+  if (isLiveDatabase() && !state) return showLiveDatabaseStatus();
+  if (isAdmin() && canUseAdmin && !repairAdminUnlocked()) {
+    app.innerHTML = repairAdminLogin();
+    return;
+  }
+  app.innerHTML = isAdmin() ? (canUseAdmin ? admin() : '<section class="panel"><h1>บัญชีนี้มีสิทธิ์ดูข้อมูล</h1><p class="subtitle">การเปิดงานและบันทึกข้อมูลต้องใช้บัญชีที่ได้รับสิทธิ์ Admin</p></section>') : section ? repairIndex(section) : dashboard();
   if (isAdmin() && canUseAdmin) afterAdmin();
   else if (!isAdmin()) table();
 }

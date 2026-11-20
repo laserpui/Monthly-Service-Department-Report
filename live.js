@@ -103,6 +103,35 @@ async function callRepairServer(method, ...args) {
   });
 }
 
+let repairAdminSession = null;
+
+function repairAdminUnlocked() {
+  return !isLiveDatabase() || Boolean(repairAdminSession?.expiresAt > Date.now());
+}
+
+function repairAdminLogin() {
+  return '<section class="panel live-status"><h1>เข้าสู่ Admin</h1>' +
+    '<form data-form="admin-login"><label class="field"><span>รหัส Admin</span>' +
+    '<input type="password" name="password" autocomplete="current-password" required></label>' +
+    formFooter("เข้าสู่ระบบ") + '</form></section>';
+}
+
+async function submitRepairAdminLogin(form,password) {
+  const button = form.querySelector('button[type="submit"]');
+  const error = form.querySelector(".error");
+  button.disabled = true;
+  error.hidden = true;
+  try {
+    repairAdminSession = await callRepairServer("unlockRepairAdmin",password);
+    if (isAdmin()) render();
+  } catch (failure) {
+    error.textContent = failure.message || "เข้าสู่ Admin ไม่สำเร็จ";
+    error.hidden = false;
+  } finally {
+    button.disabled = false;
+  }
+}
+
 function acceptLiveState(data) {
   if (!Array.isArray(data?.repairs) || !data.settings || !data.role) throw new Error("ข้อมูลที่ได้รับจาก Google Sheets ไม่ครบ");
   state = { ...data, statuses:{...R.statuses,...data.statuses} };
@@ -137,6 +166,11 @@ async function loadLiveDatabase() {
 
 async function saveLiveForm(form, values) {
   const error = form.querySelector(".error");
+  if (!repairAdminUnlocked()) {
+    error.textContent = "กรุณากรอกรหัสในหน้า Admin แล้วลองบันทึกอีกครั้ง";
+    error.hidden = false;
+    return;
+  }
   if (liveBusy) {
     error.textContent = "กำลังบันทึกคำขอก่อนหน้า";
     error.hidden = false;
@@ -159,7 +193,7 @@ async function saveLiveForm(form, values) {
   error.hidden = true;
   notify("กำลังบันทึกลง Google Sheets…");
   try {
-    const saved = await callRepairServer("saveRepairDatabase",{operation,repairId,updatedAt,quoteId,values,requestId:request.requestId});
+    const saved = await callRepairServer("saveRepairDatabase",{operation,repairId,updatedAt,quoteId,values,requestId:request.requestId,adminToken:repairAdminSession.token});
     acceptLiveState(saved);
     if (form.isConnected) {
       if (kind === "repair") showSavedAdminRepair(values.srn);
@@ -170,7 +204,13 @@ async function saveLiveForm(form, values) {
     } else if (!document.querySelector("main form")) render();
     notify(kind === "reopen" ? "เปิดงานอีกครั้งแล้ว" : "บันทึกลง Google Sheets แล้ว");
   } catch (failure) {
-    const message = failure.message || "บันทึกลง Google Sheets ไม่สำเร็จ";
+    const expired = failure.message?.includes("[ADMIN_SESSION]");
+    if (expired) repairAdminSession = null;
+    const message = expired ? "กรุณากรอกรหัส Admin อีกครั้ง" : failure.message || "บันทึกลง Google Sheets ไม่สำเร็จ";
+    if (expired && isAdmin()) {
+      if (dialog.open) dialog.close();
+      render();
+    }
     if (form.isConnected) {
       error.textContent = message;
       error.hidden = false;

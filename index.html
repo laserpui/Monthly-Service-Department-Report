@@ -30,6 +30,11 @@
         <a href="#quotations" data-route="quotations"><span data-icon="receipt"></span> เสนอราคา</a>
       </div>
       <a href="#admin" data-route="admin"><span data-icon="settings"></span> Admin</a>
+      <div class="portal-links" id="portal-links" hidden>
+        <div class="nav-label">ข้อมูลฝ่ายบริการ</div>
+        <a href="#products" data-route="products"><span data-icon="box"></span> ข้อมูลผลิตภัณฑ์</a>
+        <a href="#service-debtors" data-route="service-debtors"><span data-icon="receipt"></span> รายการลูกหนี้ Service</a>
+      </div>
     </nav>
     <div class="side-footer"><span class="avatar" data-icon="user"></span><span><strong>แผนกบริการ</strong><small>พื้นที่สาธิต</small></span></div>
   </aside>
@@ -40,6 +45,7 @@
         <button id="refresh-db" class="button compact" data-action="reload-live-data" hidden>โหลดข้อมูลใหม่</button></div>
     </header>
     <main id="app"><noscript>เปิด JavaScript เพื่อใช้งานระบบติดตามงานซ่อม</noscript></main>
+    <main id="portal-view" hidden></main>
   </div>
   <dialog id="dialog" aria-labelledby="dialog-title">
     <div class="dialog-head"><div><p class="eyebrow" id="dialog-kicker"></p><h2 id="dialog-title"></h2></div><button type="button" class="icon-button" id="dialog-close" aria-label="ปิด"><span data-icon="x"></span></button></div>

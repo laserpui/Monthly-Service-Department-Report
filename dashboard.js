@@ -46,6 +46,9 @@ function dashboard() {
   ];
   const follow = active.filter(isSpecial).sort(byRisk);
   return '<header class="hero"><div><h1>ติดตามงานซ่อม</h1><p class="subtitle">ภาพรวมงานซ่อมทุกสถานะ แนวโน้มการรับแจ้ง และงานที่ต้องติดตาม</p></div></header>' +
+    (portalAvailable() ? '<nav class="portal-shortcuts" aria-label="ข้อมูลฝ่ายบริการ">' +
+      Array.from(portalModules, ([route, module]) =>
+        '<a class="button" href="#' + route + '">' + icon(module.icon) + esc(module.title) + icon("chevron") + '</a>').join("") + '</nav>' : "") +
     '<div class="dashboard-overview"><section class="panel dashboard-summary"><header class="section-head"><h2 class="icon-title">' + icon("briefcase") + ' สรุปงานซ่อม</h2></header>' +
     '<div class="metrics">' + metrics.map(([name, count, symbol, color, detail, flag]) =>
       '<button class="metric" data-metric="' + flag + '"><div class="metric-row"><span class="metric-label">' + name + '</span><span class="tile-icon ' + color + '">' + icon(symbol) + '</span></div><div class="metric-value"><strong>' + count + '</strong><span>งาน</span></div><small>' + detail + '</small></button>').join("") + '</div></section>' +

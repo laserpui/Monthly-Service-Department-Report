@@ -399,6 +399,7 @@ document.addEventListener("submit", event => {
   if (!form.dataset.form) return;
   event.preventDefault();
   if (!form.isConnected) return;
+  if (form.dataset.form === "admin-login") return submitRepairAdminLogin(form,new FormData(form).get("password"));
   const error = form.querySelector(".error");
   const values = Object.fromEntries([...new FormData(form)]
     .filter(([,value]) => typeof value === "string")

@@ -13,6 +13,7 @@ function uploadQuotationImage(payload) {
   lock.waitLock(10000);
   try {
     repairCheck_(repairUserRole_(readRepairDatabase_(),repairUserEmail_()) === 'ADMIN','บัญชีนี้ไม่มีสิทธิ์อัปโหลดรูป');
+    requireRepairAdminSession_(payload.adminToken,repairUserEmail_());
     return writeQuotationImage_(input);
   } finally {
     lock.releaseLock();

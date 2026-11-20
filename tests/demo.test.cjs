@@ -128,7 +128,7 @@ function openDemo() {
   scripts.forEach(file => run(fs.readFileSync(path.join(root,file),"utf8")));
   const currentRoutes = () => nav.filter(link => link["aria-current"] === "page").map(link => link.dataset.route);
   const dispatch = (type,event) => listeners.get(type)(event);
-  return { run, node, currentRoutes, dispatch };
+  return { run, node, currentRoutes, dispatch, nav };
 }
 
 test("dashboard metrics and status cards filter the full repair table and its CSV", () => {
@@ -770,7 +770,7 @@ test("Apps Script saves quote images under the configured Drive folder and retri
     },
     LockService:{ getScriptLock:()=>({waitLock(){},releaseLock(){releases++;}}) },
     repairCheck_:(ok,message)=>{if(!ok) throw new Error(message);},
-    repairUserRole_:()=>"ADMIN",readRepairDatabase_:()=>({}),repairUserEmail_:()=>email,
+    repairUserRole_:()=>"ADMIN",readRepairDatabase_:()=>({}),repairUserEmail_:()=>email,requireRepairAdminSession_(){},
     Drive:{Files:{
       get(id){
         assert.equal(id,rootId);
@@ -894,13 +894,18 @@ function openSheetBackend() {
   let serial = 0;
   let batchCount = 0;
   let mayUseOwner = true;
+  const entries = new Map();
+  const cache = {get:key=>entries.get(key),put:(key,value)=>entries.set(key,value),remove:key=>entries.delete(key)};
+  const unlocked = () => context.unlockRepairAdmin("test-only-password");
   const email = "owner@example.test";
   const context = vm.createContext({
     Date:class extends Date { constructor(...args) { super(...(args.length ? args : ["2026-11-19T08:00:00.000Z"])); } },
     Session:{ getActiveUser:()=>({getEmail:()=>email}),getEffectiveUser:()=>({getEmail:()=>email}) },
     Drive:{ Files:{ get:()=>({ownedByMe:mayUseOwner}) } },
-    LockService:{ getScriptLock:()=>({waitLock(){},releaseLock(){}}) },
-    Utilities:{ formatDate:value=>R.bangkokDay(value), getUuid:()=>String(++serial).padStart(12,"0") },
+    LockService:{ getScriptLock:()=>({waitLock(){},releaseLock(){}}),getUserLock:()=>({waitLock(){},releaseLock(){}}) },
+    Utilities:{ formatDate:value=>R.bangkokDay(value), getUuid:()=>globalThis.crypto.randomUUID() },
+    PropertiesService:{getScriptProperties:()=>({getProperty:()=>"test-only-password"})},
+    CacheService:{getUserCache:()=>cache},
     storeQuotationImage_:input=>({id:"image-id",path:"2026/11/" + input.srn + "_" + input.customer + ".png"}),
     Sheets:{ Spreadsheets:{
       get:()=>({sheets:[...grids.entries()].map(([title,grid])=>({properties:{title,sheetId:grid.id}}))}),
@@ -917,11 +922,12 @@ function openSheetBackend() {
       }
     }}
   });
-  for (const file of ["Schema.gs","RepairDatabase.gs","RepairWrites.gs"]) vm.runInContext(fs.readFileSync(path.join(root,"google-apps-script",file),"utf8"),context);
+  for (const file of ["Schema.gs","RepairDatabase.gs","RepairWrites.gs","AdminAccess.gs"]) vm.runInContext(fs.readFileSync(path.join(root,"google-apps-script",file),"utf8"),context);
   const columns = vm.runInContext("REPAIR_DATABASE_COLUMNS_",context);
   Object.entries(columns).forEach(([title,columns],index)=>grids.set(title,{id:index,rows:[columns.split(" ")]}));
   grids.get("Technicians").rows.push(["TEC-001","ประวิทย์",true]);
-  const save = (operation,values,extra = {}) => context.saveRepairDatabase({operation,values,requestId:"request-" + (++serial),...extra});
+  const {token} = unlocked();
+  const save = (operation,values,extra = {}) => context.saveRepairDatabase({operation,values,requestId:"request-" + (++serial),adminToken:token,...extra});
   return {context,grids,save,batches:()=>batchCount,disableOwner:()=>{mayUseOwner=false;}};
 }
 
@@ -1010,15 +1016,24 @@ test("Apps Script mode loads only Sheet data and routes form saves to the server
     window.google = {script:{run:{
       withSuccessHandler(fn){this.done=fn;return this;}, withFailureHandler(){return this;},
       getRepairDatabase(){this.done(${fresh});},
+      unlockRepairAdmin(input){if(input!=="test-only-password") throw new Error("รหัส Admin ไม่ถูกต้อง"); this.done({token:"test-session",expiresAt:Date.now()+10000});},
       saveRepairDatabase(input){request=input;this.done(${fresh});}
     }}};`);
   await dispatch("DOMContentLoaded");
   assert.equal(run("state.repairs.length"),0);
   assert.equal(node("#source-status").textContent,"Google Sheets");
   run('location.hash = "#admin"; adminTab = "new"; render()');
+  const feedback = {};
+  const login = {dataset:{form:"admin-login"},entries:{get:()=>"wrong"},querySelector:()=>feedback,isConnected:true};
+  await dispatch("submit",{target:login,preventDefault(){}});
+  assert.match(feedback.textContent,/รหัส Admin ไม่ถูกต้อง/);
+  login.entries.get = ()=>"test-only-password";
+  await dispatch("submit",{target:login,preventDefault(){}});
+  assert.match(node("#app").innerHTML,/เปิดงานใหม่/);
   const form = {dataset:{form:"repair"},entries:[["srn","SRN-QA"]],querySelector:()=>({}),querySelectorAll:()=>[],isConnected:true};
   await dispatch("submit",{target:form,preventDefault(){}});
   assert.equal(run("request.operation"),"create");
+  assert.equal(run("request.adminToken"),"test-session");
   assert.equal(run("request.values.srn"),"SRN-QA");
   assert.equal(node("#toast").textContent,"บันทึกลง Google Sheets แล้ว");
 
@@ -1134,4 +1149,33 @@ test("Sheet backend opens a repair with no serial and links its machine after ed
   assert.equal(edited.serial_number,"SN-REAL-LATER");
   assert.ok(edited.machine_id);
   assert.equal(grids.get("Machines").rows.length,2);
+});
+
+test("Admin remains reachable while repair access is checked and only admins see editing tools", () => {
+  const { run, node, nav, currentRoutes } = openDemo();
+  const adminLink = nav.find(link => link.dataset.route === "admin");
+  run('document.body.dataset.liveDatabase = "true"; location.hash = "#admin"; const demoState = state; state = null; render();');
+  assert.notEqual(adminLink.hidden,true);
+  assert.deepEqual(currentRoutes(),["admin"]);
+  assert.match(node("#app").innerHTML,/กำลังโหลดข้อมูลจาก Google Sheets/);
+
+  run('state = {...demoState, role:"VIEWER"}; render();');
+  assert.notEqual(adminLink.hidden,true);
+  assert.match(node("#app").innerHTML,/ต้องใช้บัญชีที่ได้รับสิทธิ์ Admin/);
+  assert.doesNotMatch(node("#app").innerHTML,/เปิดงานใหม่/);
+
+  run('state.role = "ADMIN"; render();');
+  assert.match(node("#app").innerHTML,/type="password"/);
+  run('repairAdminSession = {expiresAt:Date.now()+10000}; render();');
+  assert.notEqual(adminLink.hidden,true);
+  assert.match(node("#app").innerHTML,/เปิดงานใหม่/);
+});
+
+test("repair writes require an Admin session and wrong passwords are rate limited", () => {
+  const {context,batches}=openSheetBackend();
+  assert.throws(()=>context.saveRepairDatabase({requestId:"missing-admin-1"}),/กรุณากรอกรหัส Admin/);
+  assert.throws(()=>context.saveRepairDatabase({requestId:"invalid-admin-1",adminToken:"invalid"}),/กรุณากรอกรหัส Admin/);
+  assert.equal(batches(),0);
+  for (let i=0;i<5;i++) assert.throws(()=>context.unlockRepairAdmin("wrong-test-password"),/รหัส Admin ไม่ถูกต้อง/);
+  assert.throws(()=>context.unlockRepairAdmin("test-only-password"),/ลองใหม่ใน 5 นาที/);
 });

@@ -253,6 +253,19 @@ td .quote-image-trigger{margin-top:0}
 @media(max-width:430px){.record .quote-number-trigger{margin-inline-start:0;display:flex;width:fit-content}}
 .live-status .button{margin-top:14px}
 
+.portal-links{margin-top:16px;padding-top:15px;border-top:1px solid var(--line)}
+.portal-shortcuts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.portal-shortcuts a{margin:0;color:var(--teal-dark);justify-content:flex-start}
+.portal-shortcuts svg:last-child{width:14px}
+.portal-frame{display:block;width:100%;height:max(660px,calc(100dvh - 123px));border:0;border-radius:24px;background:transparent}
+@media(max-width:720px){
+  .portal-links{grid-area:3/1/4/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin:0;padding:4px 0 0}
+  .sidebar .portal-links a{justify-content:center;text-align:center}
+  .portal-frame{height:max(690px,calc(100dvh - 185px));border-radius:18px}
+  .portal-frame-products{min-height:760px}
+}
+@media(min-width:721px){.sidebar nav{overflow-y:auto}.side-footer{flex-shrink:0}}
+
 </style>
 </head>
 <body data-live-database="true">
@@ -267,6 +280,11 @@ td .quote-image-trigger{margin-top:0}
         <a href="#quotations" data-route="quotations"><span data-icon="receipt"></span> เสนอราคา</a>
       </div>
       <a href="#admin" data-route="admin"><span data-icon="settings"></span> Admin</a>
+      <div class="portal-links" id="portal-links" hidden>
+        <div class="nav-label">ข้อมูลฝ่ายบริการ</div>
+        <a href="#products" data-route="products"><span data-icon="box"></span> ข้อมูลผลิตภัณฑ์</a>
+        <a href="#service-debtors" data-route="service-debtors"><span data-icon="receipt"></span> รายการลูกหนี้ Service</a>
+      </div>
     </nav>
     <div class="side-footer"><span class="avatar" data-icon="user"></span><span><strong>แผนกบริการ</strong><small>พื้นที่สาธิต</small></span></div>
   </aside>
@@ -277,6 +295,7 @@ td .quote-image-trigger{margin-top:0}
         <button id="refresh-db" class="button compact" data-action="reload-live-data" hidden>โหลดข้อมูลใหม่</button></div>
     </header>
     <main id="app"></main>
+    <main id="portal-view" hidden></main>
   </div>
   <dialog id="dialog" aria-labelledby="dialog-title">
     <div class="dialog-head"><div><p class="eyebrow" id="dialog-kicker"></p><h2 id="dialog-title"></h2></div><button type="button" class="icon-button" id="dialog-close" aria-label="ปิด"><span data-icon="x"></span></button></div>
@@ -437,6 +456,7 @@ const app = document.querySelector("#app");
 const dialog = document.querySelector("#dialog");
 const dialogBody = document.querySelector("#dialog-body");
 const paths = {
+  box:'<path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Zm0 9 8-4.5M12 12 4 7.5M12 12v9M8 5.25l8 4.5"/>',
   wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-7 7a2.1 2.1 0 0 1-3-3l7-7a6 6 0 0 1 7.9-7.9z"/>',
   layout:'<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
   settings:'<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2" fill="white"/><circle cx="15" cy="17" r="2" fill="white"/>',
@@ -478,23 +498,64 @@ const assignedEngineerNames = repair => [repair.assigned_engineer_id,repair.seco
 const assignedEngineer = repair => assignedEngineerNames(repair).join(" · ") || "ยังไม่จ่ายงาน";
 const isAdmin = () => location.hash === "#admin";
 
+const portalModules = new Map([
+  ["products", { title:"ข้อมูลผลิตภัณฑ์", icon:"box", path:"ข้อมูลผลิตภัณฑ์/ข้อมูลผลิตภัณฑ์.html" }],
+  ["service-debtors", { title:"รายการลูกหนี้ Service", icon:"receipt", path:"รายการลูกหนี้ Service/index.html" }]
+]);
+const portalAvailable = () => !isLiveDatabase() || Boolean(document.body.dataset.scriptUrl);
+const portalFrames = new Map();
+
+function showPortalModule(route, module, host) {
+  if (!portalFrames.has(route)) {
+    const frame = document.createElement("iframe");
+    frame.className = "portal-frame portal-frame-" + route;
+    frame.title = module.title;
+    frame.addEventListener("load", () => {
+      const page = frame.contentDocument;
+      if (!page?.head || page.querySelector("#portal-theme")) return;
+      page.documentElement.classList.add("portal-module", "portal-" + route);
+      const theme = page.createElement("link");
+      theme.id = "portal-theme";
+      theme.rel = "stylesheet";
+      theme.href = new URL("portal-theme.css", document.baseURI).href;
+      page.head.append(theme);
+    });
+    frame.src = module.path.split("/").map(encodeURIComponent).join("/");
+    portalFrames.set(route, frame);
+    host.append(frame);
+  }
+  for (const [key, frame] of portalFrames) frame.hidden = key !== route;
+}
+
 function render() {
-  if (isLiveDatabase() && !state) return showLiveDatabaseStatus();
+  const portalEnabled = portalAvailable();
+  const requestedRoute = location.hash.slice(1);
+  const module = portalEnabled && portalModules.get(requestedRoute);
+  const portal = document.querySelector("#portal-view");
+  document.querySelector("#portal-links").hidden = !portalEnabled;
+  portal.hidden = !module;
+  app.hidden = Boolean(module);
+  document.querySelector("#source-status").hidden = Boolean(module);
+  document.querySelector("#refresh-db").hidden = Boolean(module) || !isLiveDatabase() || !state;
   const section = dashboardSection();
-  const canUseAdmin = !isLiveDatabase() || state.role === "ADMIN";
-  if (isLiveDatabase()) {
+  const canUseAdmin = !isLiveDatabase() || state?.role === "ADMIN";
+  if (isLiveDatabase() && state) {
     document.querySelector("#source-status").textContent = "Google Sheets";
-    document.querySelector("#refresh-db").hidden = false;
     document.querySelector(".side-footer small").textContent = "ข้อมูลจริง";
   }
-  const route = isAdmin() ? "admin" : section ? location.hash.slice(1) : "dashboard";
+  const route = module || section || isAdmin() ? requestedRoute : "dashboard";
   document.querySelectorAll("[data-route]").forEach(link => {
-    if (link.dataset.route === "admin") link.hidden = !canUseAdmin;
     if (link.dataset.route === route) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
-  document.querySelector("#breadcrumb").textContent = isAdmin() ? "Admin" : section?.title || "Dashboard";
-  app.innerHTML = isAdmin() ? (canUseAdmin ? admin() : '<section class="panel"><h1>บัญชีนี้มีสิทธิ์ดูข้อมูล</h1></section>') : section ? repairIndex(section) : dashboard();
+  document.querySelector("#breadcrumb").textContent = module?.title || (isAdmin() ? "Admin" : section?.title || "Dashboard");
+  if (module) return showPortalModule(route, module, portal);
+  if (isLiveDatabase() && !state) return showLiveDatabaseStatus();
+  if (isAdmin() && canUseAdmin && !repairAdminUnlocked()) {
+    app.innerHTML = repairAdminLogin();
+    return;
+  }
+  app.innerHTML = isAdmin() ? (canUseAdmin ? admin() : '<section class="panel"><h1>บัญชีนี้มีสิทธิ์ดูข้อมูล</h1><p class="subtitle">การเปิดงานและบันทึกข้อมูลต้องใช้บัญชีที่ได้รับสิทธิ์ Admin</p></section>') : section ? repairIndex(section) : dashboard();
   if (isAdmin() && canUseAdmin) afterAdmin();
   else if (!isAdmin()) table();
 }
@@ -703,6 +764,9 @@ function dashboard() {
   ];
   const follow = active.filter(isSpecial).sort(byRisk);
   return '<header class="hero"><div><h1>ติดตามงานซ่อม</h1><p class="subtitle">ภาพรวมงานซ่อมทุกสถานะ แนวโน้มการรับแจ้ง และงานที่ต้องติดตาม</p></div></header>' +
+    (portalAvailable() ? '<nav class="portal-shortcuts" aria-label="ข้อมูลฝ่ายบริการ">' +
+      Array.from(portalModules, ([route, module]) =>
+        '<a class="button" href="#' + route + '">' + icon(module.icon) + esc(module.title) + icon("chevron") + '</a>').join("") + '</nav>' : "") +
     '<div class="dashboard-overview"><section class="panel dashboard-summary"><header class="section-head"><h2 class="icon-title">' + icon("briefcase") + ' สรุปงานซ่อม</h2></header>' +
     '<div class="metrics">' + metrics.map(([name, count, symbol, color, detail, flag]) =>
       '<button class="metric" data-metric="' + flag + '"><div class="metric-row"><span class="metric-label">' + name + '</span><span class="tile-icon ' + color + '">' + icon(symbol) + '</span></div><div class="metric-value"><strong>' + count + '</strong><span>งาน</span></div><small>' + detail + '</small></button>').join("") + '</div></section>' +
@@ -1352,7 +1416,8 @@ async function uploadQuoteToDrive(repairId, quoteId) {
         uploadId:quoteId, srn:quote.image_drive_srn || repair.srn,
         customer:quote.image_drive_customer || state.customers[repair.customer_id],
         date:R.bangkokDay(quote.quoted_at || quote.image_attached_at || R.today),
-        source:quote.image_data_url
+        source:quote.image_data_url,
+        adminToken:repairAdminSession?.token
       });
     });
     if (!/^[a-zA-Z0-9_-]+$/.test(image?.id || "") || typeof image?.path !== "string") throw new Error("Invalid Drive result");
@@ -1544,6 +1609,35 @@ async function callRepairServer(method, ...args) {
   });
 }
 
+let repairAdminSession = null;
+
+function repairAdminUnlocked() {
+  return !isLiveDatabase() || Boolean(repairAdminSession?.expiresAt > Date.now());
+}
+
+function repairAdminLogin() {
+  return '<section class="panel live-status"><h1>เข้าสู่ Admin</h1>' +
+    '<form data-form="admin-login"><label class="field"><span>รหัส Admin</span>' +
+    '<input type="password" name="password" autocomplete="current-password" required></label>' +
+    formFooter("เข้าสู่ระบบ") + '</form></section>';
+}
+
+async function submitRepairAdminLogin(form,password) {
+  const button = form.querySelector('button[type="submit"]');
+  const error = form.querySelector(".error");
+  button.disabled = true;
+  error.hidden = true;
+  try {
+    repairAdminSession = await callRepairServer("unlockRepairAdmin",password);
+    if (isAdmin()) render();
+  } catch (failure) {
+    error.textContent = failure.message || "เข้าสู่ Admin ไม่สำเร็จ";
+    error.hidden = false;
+  } finally {
+    button.disabled = false;
+  }
+}
+
 function acceptLiveState(data) {
   if (!Array.isArray(data?.repairs) || !data.settings || !data.role) throw new Error("ข้อมูลที่ได้รับจาก Google Sheets ไม่ครบ");
   state = { ...data, statuses:{...R.statuses,...data.statuses} };
@@ -1578,6 +1672,11 @@ async function loadLiveDatabase() {
 
 async function saveLiveForm(form, values) {
   const error = form.querySelector(".error");
+  if (!repairAdminUnlocked()) {
+    error.textContent = "กรุณากรอกรหัสในหน้า Admin แล้วลองบันทึกอีกครั้ง";
+    error.hidden = false;
+    return;
+  }
   if (liveBusy) {
     error.textContent = "กำลังบันทึกคำขอก่อนหน้า";
     error.hidden = false;
@@ -1600,7 +1699,7 @@ async function saveLiveForm(form, values) {
   error.hidden = true;
   notify("กำลังบันทึกลง Google Sheets…");
   try {
-    const saved = await callRepairServer("saveRepairDatabase",{operation,repairId,updatedAt,quoteId,values,requestId:request.requestId});
+    const saved = await callRepairServer("saveRepairDatabase",{operation,repairId,updatedAt,quoteId,values,requestId:request.requestId,adminToken:repairAdminSession.token});
     acceptLiveState(saved);
     if (form.isConnected) {
       if (kind === "repair") showSavedAdminRepair(values.srn);
@@ -1611,7 +1710,13 @@ async function saveLiveForm(form, values) {
     } else if (!document.querySelector("main form")) render();
     notify(kind === "reopen" ? "เปิดงานอีกครั้งแล้ว" : "บันทึกลง Google Sheets แล้ว");
   } catch (failure) {
-    const message = failure.message || "บันทึกลง Google Sheets ไม่สำเร็จ";
+    const expired = failure.message?.includes("[ADMIN_SESSION]");
+    if (expired) repairAdminSession = null;
+    const message = expired ? "กรุณากรอกรหัส Admin อีกครั้ง" : failure.message || "บันทึกลง Google Sheets ไม่สำเร็จ";
+    if (expired && isAdmin()) {
+      if (dialog.open) dialog.close();
+      render();
+    }
     if (form.isConnected) {
       error.textContent = message;
       error.hidden = false;
@@ -2026,6 +2131,7 @@ document.addEventListener("submit", event => {
   if (!form.dataset.form) return;
   event.preventDefault();
   if (!form.isConnected) return;
+  if (form.dataset.form === "admin-login") return submitRepairAdminLogin(form,new FormData(form).get("password"));
   const error = form.querySelector(".error");
   const values = Object.fromEntries([...new FormData(form)]
     .filter(([,value]) => typeof value === "string")

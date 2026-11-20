@@ -143,7 +143,8 @@ async function uploadQuoteToDrive(repairId, quoteId) {
         uploadId:quoteId, srn:quote.image_drive_srn || repair.srn,
         customer:quote.image_drive_customer || state.customers[repair.customer_id],
         date:R.bangkokDay(quote.quoted_at || quote.image_attached_at || R.today),
-        source:quote.image_data_url
+        source:quote.image_data_url,
+        adminToken:repairAdminSession?.token
       });
     });
     if (!/^[a-zA-Z0-9_-]+$/.test(image?.id || "") || typeof image?.path !== "string") throw new Error("Invalid Drive result");

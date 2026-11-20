@@ -24,7 +24,8 @@
     const { id,method,args } = message;
     const fail = error => send({type:"result",id,ok:false,error:error?.message || "เรียกข้อมูล Google Sheets ไม่สำเร็จ"});
     if (!Array.isArray(args) ||
-      !((method === "getRepairDatabase" && args.length === 0) || (method === "saveRepairDatabase" && args.length === 1))) {
+      !((method === "getRepairDatabase" && args.length === 0) ||
+        (["saveRepairDatabase","unlockRepairAdmin"].includes(method) && args.length === 1))) {
       fail(new Error("คำสั่งไม่ถูกต้อง"));
       return;
     }
