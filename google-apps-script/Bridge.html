@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <title>Google Sheets connection</title>
+</head>
+<body>
+<script>
+(() => {
+  "use strict";
+  const origin = <?!= JSON.stringify(webOrigin) ?>;
+  const nonce = <?!= JSON.stringify(webNonce) ?>;
+  const protocol = "service-repair-bridge-v1";
+  if (window.top === window) return;
+
+  function send(data) {
+    window.top.postMessage({ ...data, protocol, nonce },origin);
+  }
+
+  window.addEventListener("message",event => {
+    if (event.origin !== origin || event.source !== window.top) return;
+    const message = event.data;
+    if (message?.protocol !== protocol || message.nonce !== nonce || message.type !== "call" || typeof message.id !== "string") return;
+    const { id,method,args } = message;
+    const fail = error => send({type:"result",id,ok:false,error:error?.message || "เรียกข้อมูล Google Sheets ไม่สำเร็จ"});
+    if (!Array.isArray(args) ||
+      !((method === "getRepairDatabase" && args.length === 0) || (method === "saveRepairDatabase" && args.length === 1))) {
+      fail(new Error("คำสั่งไม่ถูกต้อง"));
+      return;
+    }
+    try {
+      google.script.run
+        .withSuccessHandler(value => send({type:"result",id,ok:true,value}))
+        .withFailureHandler(fail)[method](...args);
+    } catch (error) {
+      fail(error);
+    }
+  });
+  send({type:"ready"});
+})();
+</script>
+</body>
+</html>

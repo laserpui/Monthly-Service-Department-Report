@@ -4,8 +4,98 @@ const isLiveDatabase = () => document.body.dataset.liveDatabase === "true";
 let liveError = "";
 let liveBusy = false;
 const liveRequests = new WeakMap();
+let hostedRepairBridge;
 
-function callRepairServer(method, ...args) {
+function configuredRepairScript() {
+  try {
+    const url = new URL(document.body.dataset.scriptUrl);
+    if (url.origin === "https://script.google.com" && /^\/macros\/s\/[\w-]+\/exec$/.test(url.pathname)) return url;
+  } catch { /* The Apps Script page and Demo do not need a separate connection. */ }
+  return null;
+}
+
+function isBridgeFrame(source, root) {
+  for (let depth = 0; source && source !== window && depth < 8; depth++) {
+    if (source === root) return true;
+    const parent = source.parent;
+    if (source === parent) break;
+    source = parent;
+  }
+  return false;
+}
+
+function connectHostedRepairBridge(url) {
+  if (location.origin === "null") throw new Error("กรุณาเปิดหน้านี้ผ่านเว็บไซต์เพื่อเชื่อมต่อ Google Sheets");
+  if (window.top !== window) throw new Error("กรุณาเปิดหน้าเว็บไซต์ในแท็บของเบราว์เซอร์โดยตรง");
+  const protocol = "service-repair-bridge-v1";
+  const nonce = crypto.randomUUID();
+  const frame = document.createElement("iframe");
+  frame.title = "เชื่อมต่อ Google Sheets";
+  frame.hidden = true;
+  url.search = new URLSearchParams({bridge:"1",origin:location.origin,nonce}).toString();
+  frame.src = url.href;
+  const pending = new Map();
+  let peer, peerOrigin, resolveReady, rejectReady;
+  const ready = new Promise((resolve,reject) => { resolveReady = resolve; rejectReady = reject; });
+  const readyTimer = setTimeout(() => disconnect(new Error("เชื่อมต่อ Google Sheets ไม่สำเร็จ กรุณาตรวจสิทธิ์บัญชี Google แล้วลองใหม่")),25_000);
+
+  function disconnect(error) {
+    clearTimeout(readyTimer);
+    window.removeEventListener("message",receive);
+    frame.remove();
+    hostedRepairBridge = undefined;
+    rejectReady(error);
+    for (const request of pending.values()) {
+      clearTimeout(request.timer);
+      request.reject(error);
+    }
+    pending.clear();
+  }
+
+  function receive(event) {
+    const message = event.data;
+    if (message?.protocol !== protocol || message.nonce !== nonce) return;
+    if (!peer) {
+      const googleFrame = /^https:\/\/(?:[a-z0-9-]+-)?script\.googleusercontent\.com$/.test(event.origin);
+      if (!googleFrame || message.type !== "ready" || !isBridgeFrame(event.source,frame.contentWindow)) return;
+      peer = event.source;
+      peerOrigin = event.origin;
+      clearTimeout(readyTimer);
+      resolveReady();
+      return;
+    }
+    if (event.source !== peer || event.origin !== peerOrigin || message.type !== "result") return;
+    const request = pending.get(message.id);
+    if (!request) return;
+    clearTimeout(request.timer);
+    pending.delete(message.id);
+    if (message.ok) request.resolve(message.value);
+    else request.reject(new Error(message.error || "เรียกข้อมูล Google Sheets ไม่สำเร็จ"));
+  }
+
+  window.addEventListener("message",receive);
+  document.body.append(frame);
+  return async (method,args) => {
+    await ready;
+    return new Promise((resolve,reject) => {
+      const id = crypto.randomUUID();
+      const timer = setTimeout(() => disconnect(new Error("Google Sheets ใช้เวลาตอบกลับนาน กรุณาลองใหม่")),60_000);
+      pending.set(id,{resolve,reject,timer});
+      try {
+        peer.postMessage({protocol,nonce,type:"call",id,method,args},peerOrigin);
+      } catch (error) {
+        disconnect(error);
+      }
+    });
+  };
+}
+
+async function callRepairServer(method, ...args) {
+  const script = configuredRepairScript();
+  if (script) {
+    hostedRepairBridge ||= connectHostedRepairBridge(script);
+    return hostedRepairBridge(method,args);
+  }
   return new Promise((resolve,reject) => {
     const bridge = window.google?.script?.run;
     if (!bridge) return reject(new Error("เปิดผ่าน URL /exec ของ Apps Script"));
@@ -21,8 +111,12 @@ function acceptLiveState(data) {
 function showLiveDatabaseStatus() {
   const source = document.querySelector("#source-status");
   source.textContent = liveError ? "เชื่อมต่อไม่ได้" : "กำลังโหลด Google Sheets";
+  const script = configuredRepairScript();
+  if (script) script.searchParams.set("authorize","1");
+  const authorize = script ? '<a class="button" href="' + esc(script.href) + '" target="_blank" rel="noopener noreferrer">ตรวจสิทธิ์บัญชี Google</a>' : "";
   app.innerHTML = '<section class="panel live-status"><h1>' + (liveError ? "เปิดฐานข้อมูลไม่ได้" : "กำลังโหลดข้อมูลจาก Google Sheets") + '</h1>' +
-    (liveError ? '<p class="subtitle">' + esc(liveError) + '</p><button class="button primary" data-action="reload-live-data">ลองใหม่</button>' : '') + '</section>';
+    (liveError ? '<p class="subtitle">' + esc(liveError) + '</p><div class="data-actions"><button class="button primary" data-action="reload-live-data">ลองใหม่</button>' +
+      authorize + '</div>' : '') + '</section>';
 }
 
 async function loadLiveDatabase() {

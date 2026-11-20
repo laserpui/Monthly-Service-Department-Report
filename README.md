@@ -13,7 +13,7 @@ Web App ภาษาไทยสำหรับติดตามงานซ่
 
 ## เปิดใช้งานผ่าน Apps Script
 
-1. ใช้ [Apps Script](https://script.google.com/home) เพื่อสร้างโปรเจกต์ด้วยบัญชีเจ้าของฐานข้อมูลใหม่ เพิ่ม `Code.gs`, `Schema.gs`, `RepairDatabase.gs`, `RepairWrites.gs` และ `QuotationDrive.gs` จากโฟลเดอร์ `google-apps-script/`
+1. ใช้ [Apps Script](https://script.google.com/home) เพื่อสร้างโปรเจกต์ด้วยบัญชีเจ้าของฐานข้อมูลใหม่ เพิ่ม `Code.gs`, `Schema.gs`, `RepairDatabase.gs`, `RepairWrites.gs`, `QuotationDrive.gs` และ `Bridge.html` จากโฟลเดอร์ `google-apps-script/`
 2. สร้างไฟล์ HTML ชื่อ `Index` แล้วใช้เนื้อหาจาก `google-apps-script/Index.html` หากแก้ไฟล์เว็บ ให้สร้างไฟล์นี้ใหม่ด้วย `node scripts/build-apps-script.cjs`
 3. ใน **Project Settings** เปิดการแสดง `appsscript.json` แล้วใช้ manifest ในโฟลเดอร์โครงการ ซึ่งตั้งค่าเวลา `Asia/Bangkok` พร้อมบริการ **Google Sheets API v4** และ **Drive API v3** หากใช้ Google Cloud Project แบบกำหนดเอง ให้เปิด API ทั้งสองใน Cloud Project ด้วย [คู่มือ Advanced Google Services](https://developers.google.com/apps-script/guides/services/advanced)
 4. เลือก **Deploy → New deployment → Web app** ตั้ง **Execute as → User accessing the web app** และเริ่มด้วย **Only myself** จากนั้นเปิด URL `/exec` และอนุญาตสิทธิ์ Google Sheets และ Drive [คู่มือ Web Apps](https://developers.google.com/apps-script/guides/web)
@@ -21,11 +21,15 @@ Web App ภาษาไทยสำหรับติดตามงานซ่
 
 ## เปิดจาก GitHub Pages
 
-เปิด `index.html` จากเครื่องหรือเผยแพร่ผ่าน GitHub Pages ที่ root ของ repository ไฟล์นี้จะพาไปยัง URL `/exec` ของ Apps Script เพื่อใช้งานข้อมูลจริงด้วยสิทธิ์ของบัญชี Google เดิม และมีปุ่มเปิดระบบหากเบราว์เซอร์ยังอยู่ที่หน้าแรก [คู่มือ GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
+เผยแพร่ `index.html` พร้อมไฟล์ JavaScript และ CSS ที่ root ของ repository ผู้ใช้ทำงานบน GitHub Pages โดยตรง และหน้าเว็บเชื่อมกับ Google Sheets ผ่าน Apps Script เบื้องหลังด้วยสิทธิ์ของบัญชี Google เดิม [คู่มือ GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
+
+Apps Script อนุญาตเว็บจาก `https://laserpui.github.io` และเว็บทดสอบบนพอร์ต `8765` ของเครื่อง หากใช้โดเมนอื่น ให้ระบุใน `REPAIR_WEB_ORIGINS_` ของ `Code.gs` แล้วเผยแพร่ Apps Script เวอร์ชันใหม่
+
+หากหน้าเว็บแจ้งว่าเปิดฐานข้อมูลไม่ได้ ให้กด **ตรวจสิทธิ์บัญชี Google** จากนั้นกลับมาแท็บเดิมแล้วกด **ลองใหม่** การเชื่อมต่ออาศัยเซสชัน Google ในเบราว์เซอร์และการอนุญาตให้ใช้เซสชันนั้นในเฟรมของเว็บ
 
 ## โหมด Demo
 
-เปิด `demo.html` เพื่อทดลองด้วยข้อมูลจำลอง ไฟล์นี้เป็นต้นทางสำหรับสร้าง `google-apps-script/Index.html` ด้วยคำสั่ง build
+เปิด `demo.html` เพื่อทดลองด้วยข้อมูลจำลอง ไฟล์นี้เป็นต้นทางสำหรับสร้างทั้ง `index.html` และ `google-apps-script/Index.html` ด้วยคำสั่ง `node scripts/build-apps-script.cjs`
 
 หากต้องการเก็บรูปจาก Demo ลงเครื่อง สามารถเลือกโฟลเดอร์หลักใน Chrome หรือ Edge และเปิดหรือดาวน์โหลดรูปจากรายละเอียดงานได้
 

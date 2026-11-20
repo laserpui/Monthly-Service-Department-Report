@@ -42,17 +42,65 @@ test("closed details and repair age use the completed day with a fallback for le
 });
 
 const root = path.resolve(__dirname,"..");
-test("the static entry launches the configured Apps Script site and offers a direct link", () => {
+test("the static entry renders the app on site and configures the Google Sheets connection", () => {
   const page = fs.readFileSync(path.join(root,"index.html"),"utf8");
-  const [,url] = page.match(/<a id="open-repair-app"[^>]*href="([^"]+)"/);
+  const [,url] = page.match(/<body data-live-database="true" data-script-url="([^"]+)">/);
   assert.match(url,/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/);
-  let redirected;
-  const [,script] = page.match(/<script>([\s\S]+?)<\/script>/);
-  vm.runInNewContext(script,{
-    document:{getElementById:id => id === "open-repair-app" ? {href:url} : null},
-    window:{location:{replace:destination => { redirected = destination; }}}
-  });
-  assert.equal(redirected,url);
+  assert.match(page,/<main id="app"/);
+  assert.doesNotMatch(page,/location\.replace\(/);
+});
+
+test("the standalone web connection accepts the expected Google iframe and rejects unrelated messages", async () => {
+  const context = {
+    URL,URLSearchParams,crypto:globalThis.crypto,WeakMap,Map,
+    location:{origin:"https://laserpui.github.io"},setTimeout:()=>1,clearTimeout(){},
+    document:{body:{dataset:{scriptUrl:"https://script.google.com/macros/s/test/exec"}},createElement:()=>frame}
+  };
+  let listener,sent;
+  const rootFrame = {};
+  const frame = {contentWindow:rootFrame,remove(){}};
+  const peer = {parent:rootFrame,postMessage:(message,target) => { sent={message,target}; }};
+  context.document.body.append = () => {};
+  context.window = { addEventListener:(name,callback) => { listener=callback; },removeEventListener(){} };
+  context.window.top = context.window;
+  vm.createContext(context);
+  vm.runInContext(fs.readFileSync(path.join(root,"live.js"),"utf8"),context);
+  const result = vm.runInContext('callRepairServer("getRepairDatabase")',context);
+  const address = new URL(frame.src);
+  assert.equal(address.searchParams.get("origin"),context.location.origin);
+  assert.equal(frame.hidden,true);
+  const nonce = address.searchParams.get("nonce");
+  const googleOrigin = "https://n-qa-script.googleusercontent.com";
+  const message = (source,origin,data) => listener({source,origin,data:{protocol:"service-repair-bridge-v1",nonce,...data}});
+  message({parent:null},googleOrigin,{type:"ready"});
+  message(peer,"https://unrelated.example",{type:"ready"});
+  message(peer,googleOrigin,{type:"ready",nonce:"wrong"});
+  await Promise.resolve();
+  assert.equal(sent,undefined);
+  message(peer,googleOrigin,{type:"ready"});
+  await Promise.resolve();
+  assert.equal(sent.target,googleOrigin);
+  assert.equal(sent.message.method,"getRepairDatabase");
+  const reply = {type:"result",id:sent.message.id,ok:true,value:{repairs:[]}};
+  message({parent:rootFrame},googleOrigin,{...reply,value:{unexpected:true}});
+  message(peer,googleOrigin,reply);
+  assert.deepEqual(await result,{repairs:[]});
+});
+
+test("Apps Script permits the data connection only from configured web origins", () => {
+  const output = {setXFrameOptionsMode(mode){return mode;}};
+  const bridge = {evaluate:()=>output};
+  const context = vm.createContext({HtmlService:{
+    XFrameOptionsMode:{ALLOWALL:"bridge"},
+    createTemplateFromFile:()=>bridge,createHtmlOutput:message=>message
+  }});
+  vm.runInContext(fs.readFileSync(path.join(root,"google-apps-script/Code.gs"),"utf8"),context);
+  const parameters = {bridge:"1",nonce:"4ea71527-6127-4e25-88bd-209fbf4ccd57"};
+  assert.equal(context.doGet({parameter:{...parameters,origin:"https://other.github.io"}}),"Invalid connection request");
+  assert.equal(context.doGet({parameter:{...parameters,origin:"https://laserpui.github.io.evil.example"}}),"Invalid connection request");
+  assert.equal(context.doGet({parameter:{...parameters,origin:"https://laserpui.github.io"}}),"bridge");
+  assert.equal(bridge.webOrigin,"https://laserpui.github.io");
+  assert.equal(bridge.webNonce,parameters.nonce);
 });
 
 function openDemo() {

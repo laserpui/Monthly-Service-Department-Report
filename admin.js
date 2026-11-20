@@ -214,9 +214,9 @@ const quoteImageField = () => '<div class="quote-upload"><label class="field" fo
   '<p class="quote-image-status" id="quote-image-status" role="status"></p>' +
   '<div class="quote-image-preview" hidden><img alt="ตัวอย่างรูปใบเสนอราคา"></div>' +
   '<button type="button" class="button compact" data-action="clear-quote-image" hidden>นำรูปออก</button>' +
-  (canUploadQuoteToDrive() ? '<p class="subtitle">รูปจะถูกอัปโหลดไปยัง Google Drive เมื่อบันทึกใบเสนอราคา</p>' :
+  (isLiveDatabase() || canUploadQuoteToDrive() ? '<p class="subtitle">รูปจะถูกอัปโหลดไปยัง Google Drive เมื่อบันทึกใบเสนอราคา</p>' :
     '<p class="subtitle">โหมด Demo เก็บรูปในเบราว์เซอร์ ใช้ Web App ของ Apps Script สำหรับอัปโหลดไป Google Drive</p>') +
-  (canChooseQuoteFolder() && !canUploadQuoteToDrive() ? '<div class="quote-folder"><button type="button" class="button compact" data-action="choose-quote-folder">เลือกโฟลเดอร์เก็บรูป</button> <small id="quote-folder-status">' +
+  (!isLiveDatabase() && canChooseQuoteFolder() && !canUploadQuoteToDrive() ? '<div class="quote-folder"><button type="button" class="button compact" data-action="choose-quote-folder">เลือกโฟลเดอร์เก็บรูป</button> <small id="quote-folder-status">' +
     esc(quoteFolder ? quoteFolder.name + " / ปี / เดือน" : "รูปเก็บในเบราว์เซอร์ เลือกโฟลเดอร์เพื่อบันทึกสำเนาแยกตามปีและเดือน") + '</small></div>' : '') +
   '</div>';
 
