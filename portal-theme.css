@@ -131,3 +131,31 @@
     animation-duration:.01ms!important;transition:none!important
   }
 }
+
+@media(max-width:640px){
+  .portal-products body #dateFilterContainer:not(.hidden){
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px
+  }
+  .portal-products body #dateFilterContainer>div:first-child{grid-column:1/-1}
+  .portal-products body #dateFilterContainer>div:has(input){
+    display:grid;gap:2px;min-width:0;padding-inline:7px
+  }
+  .portal-products body #dateFilterContainer input{min-width:0;width:100%;min-height:28px}
+  .portal-products body #clearDateBtn{grid-column:1/-1;justify-self:end}
+  .portal-products body header{display:grid;grid-template-columns:minmax(0,1fr) auto;padding:10px}
+  .portal-products body header>div:first-child{justify-content:flex-start;text-align:start;gap:7px}
+  .portal-products body header>div:first-child>div:last-child{min-width:0}
+  .portal-products body header>div:first-child>div:last-child .flex{justify-content:flex-start}
+  .portal-products body header .bg-gradient-to-tr{padding:7px}
+  .portal-products body header>div:last-child{width:auto;gap:5px}
+  .portal-products body header>div:last-child>button{min-width:40px;min-height:40px}
+  .portal-service-debtors .date-group{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr))
+  }
+  .portal-service-debtors .date-group label:first-of-type{grid-area:1/1}
+  .portal-service-debtors .date-group label:nth-of-type(2){grid-area:1/2}
+  .portal-service-debtors .date-group input{grid-row:2;min-width:0;width:100%}
+  .portal-service-debtors #clearDateBtn{grid-column:1/-1;justify-self:end}
+  .portal-service-debtors .search-box input{font-size:1rem}
+}
+@media(hover:none){.portal-service-debtors .stat-card:hover{transform:none}}

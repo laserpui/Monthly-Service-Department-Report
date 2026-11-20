@@ -253,3 +253,57 @@ td .quote-image-trigger{margin-top:0}
   .portal-frame-products{min-height:760px}
 }
 @media(min-width:721px){.sidebar nav{overflow-y:auto}.side-footer{flex-shrink:0}}
+
+/* Keep the repair identifier in view when wide tables scroll. */
+@media(max-width:900px){
+  :is(#table-output,.admin-panel) .table-scroll{margin-inline:0;border:1px solid var(--line);border-radius:12px}
+  :is(#table-output,.admin-panel) .table-scroll :is(th,td):first-child:not([colspan]){
+    position:sticky;inset-inline-start:0;z-index:1;background:#f6fbfa;
+    box-shadow:1px 0 #dce6eb;
+  }
+  :is(#table-output,.admin-panel) .table-scroll th:first-child:not([colspan]){background:#edf5f7}
+}
+.search:focus-within{box-shadow:0 0 0 3px #087a7620}
+.panel{transition:border-color .18s,box-shadow .18s}
+.metric:focus-visible,.case:focus-visible{border-color:#87c7bd}
+dialog{
+  background:#f8fcfcee;backdrop-filter:blur(20px);
+  overscroll-behavior:contain;scroll-padding-block-start:5.5rem
+}
+.dialog-head{background:#f8fcfcf5;backdrop-filter:blur(16px);align-items:flex-start}
+.dialog-head>div{min-width:0;overflow-wrap:anywhere}
+.dialog-head .icon-button{flex:none}
+@media(max-width:720px){
+  .topbar{height:auto;min-height:49px;gap:6px 10px;flex-wrap:wrap;padding-block:6px}
+  .breadcrumb{min-width:0;gap:7px}
+  .breadcrumb strong{overflow-wrap:anywhere}
+  .sidebar nav a,.sidebar .repair-links a{min-height:39px}
+  .repair-filter-layout{gap:12px}
+  .repair-filter-layout .repair-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .repair-filter-layout .repair-toolbar .grow{grid-column:1/-1;max-width:none}
+  .repair-filter-layout .repair-toolbar select{width:100%;text-overflow:ellipsis}
+  .repair-date-filter{position:relative;padding-top:8px}
+  .repair-date-filter legend{padding-inline-end:72px}
+  .repair-date-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .repair-date-fields .field{max-width:none}
+  .repair-date-fields input[type=date]{width:100%;padding-inline:7px}
+  .repair-date-fields .filter-reset{position:absolute;inset:0 0 auto auto}
+  .segment button{min-height:39px}
+  .search input,.field :is(input,select,textarea){font-size:1rem}
+  .field input[type=date]{font-size:.87rem;min-height:41px}
+  .admin-nav{width:100%}
+  .admin-nav button{flex:1 1 auto}
+  .dialog-head{padding:13px 14px}
+  #dialog-body{padding:14px}
+  .dialog-head .icon-button{width:42px;min-height:42px}
+}
+@media(max-width:480px){
+  .repair-filter-layout .repair-toolbar{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:370px){
+  .detail-meta{grid-template-columns:1fr}
+  .repair-filter-layout .repair-toolbar select{padding-inline-start:7px}
+}
+@media(max-width:720px) and (max-height:520px){.sidebar{position:relative}}
+@media(hover:none){.metric:hover,.case:hover{transform:none;box-shadow:none}}
+@media(prefers-reduced-motion:reduce){.panel{transition:none}}
