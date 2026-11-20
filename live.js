@@ -109,11 +109,22 @@ function repairAdminUnlocked() {
   return !isLiveDatabase() || Boolean(repairAdminSession?.expiresAt > Date.now());
 }
 
-function repairAdminLogin() {
-  return '<section class="panel live-status"><h1>เข้าสู่ Admin</h1>' +
+function showRepairAdminLogin() {
+  if (document.querySelector("#admin-login-dialog")?.open) return;
+  app.innerHTML = '<dialog id="admin-login-dialog" aria-labelledby="admin-login-title" aria-describedby="admin-login-description">' +
+    '<div class="admin-login-header"><span class="admin-login-mark">' + icon("lock") + '</span>' +
+    '<button class="icon-button admin-login-close" type="button" aria-label="ปิด">' + icon("x") + '</button>' +
+    '<h2 id="admin-login-title">เข้าสู่ Admin</h2>' +
+    '<p id="admin-login-description" class="subtitle">กรอกรหัสเพื่อจัดการและบันทึกงานซ่อม</p></div>' +
     '<form data-form="admin-login"><label class="field"><span>รหัส Admin</span>' +
-    '<input type="password" name="password" autocomplete="current-password" required></label>' +
-    formFooter("เข้าสู่ระบบ") + '</form></section>';
+    '<input type="password" name="password" autocomplete="current-password" required autofocus></label>' +
+    formFooter("เข้าสู่ระบบ") + '</form></dialog>';
+  const modal = document.querySelector("#admin-login-dialog");
+  document.querySelector(".admin-login-close").onclick = () => modal.close();
+  modal.onclose = () => {
+    if (modal.isConnected && isAdmin() && !repairAdminUnlocked()) location.hash = "dashboard";
+  };
+  modal.showModal();
 }
 
 async function submitRepairAdminLogin(form,password) {
@@ -122,8 +133,12 @@ async function submitRepairAdminLogin(form,password) {
   button.disabled = true;
   error.hidden = true;
   try {
-    repairAdminSession = await callRepairServer("unlockRepairAdmin",password);
-    if (isAdmin()) render();
+    const session = await callRepairServer("unlockRepairAdmin",password);
+    const modal = document.querySelector("#admin-login-dialog");
+    if (!form.isConnected || !modal?.open || !isAdmin()) return;
+    repairAdminSession = session;
+    modal.close();
+    render();
   } catch (failure) {
     error.textContent = failure.message || "เข้าสู่ Admin ไม่สำเร็จ";
     error.hidden = false;

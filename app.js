@@ -6,6 +6,7 @@ const app = document.querySelector("#app");
 const dialog = document.querySelector("#dialog");
 const dialogBody = document.querySelector("#dialog-body");
 const paths = {
+  lock:'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4m-4 4v2"/>',
   box:'<path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Zm0 9 8-4.5M12 12 4 7.5M12 12v9M8 5.25l8 4.5"/>',
   wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-7 7a2.1 2.1 0 0 1-3-3l7-7a6 6 0 0 1 7.9-7.9z"/>',
   layout:'<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
@@ -102,8 +103,7 @@ function render() {
   if (module) return showPortalModule(route, module, portal);
   if (isLiveDatabase() && !state) return showLiveDatabaseStatus();
   if (isAdmin() && canUseAdmin && !repairAdminUnlocked()) {
-    app.innerHTML = repairAdminLogin();
-    return;
+    return showRepairAdminLogin();
   }
   app.innerHTML = isAdmin() ? (canUseAdmin ? admin() : '<section class="panel"><h1>บัญชีนี้มีสิทธิ์ดูข้อมูล</h1><p class="subtitle">การเปิดงานและบันทึกข้อมูลต้องใช้บัญชีที่ได้รับสิทธิ์ Admin</p></section>') : section ? repairIndex(section) : dashboard();
   if (isAdmin() && canUseAdmin) afterAdmin();

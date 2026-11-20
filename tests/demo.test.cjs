@@ -1165,7 +1165,9 @@ test("Admin remains reachable while repair access is checked and only admins see
   assert.doesNotMatch(node("#app").innerHTML,/เปิดงานใหม่/);
 
   run('state.role = "ADMIN"; render();');
-  assert.match(node("#app").innerHTML,/type="password"/);
+  assert.match(node("#app").innerHTML,/<dialog id="admin-login-dialog"/);
+  assert.match(node("#app").innerHTML,/type="password"[^>]+autofocus/);
+  assert.equal(node("#admin-login-dialog").open,true);
   run('repairAdminSession = {expiresAt:Date.now()+10000}; render();');
   assert.notEqual(adminLink.hidden,true);
   assert.match(node("#app").innerHTML,/เปิดงานใหม่/);

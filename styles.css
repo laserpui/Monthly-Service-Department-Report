@@ -307,3 +307,26 @@ dialog{
 @media(max-width:720px) and (max-height:520px){.sidebar{position:relative}}
 @media(hover:none){.metric:hover,.case:hover{transform:none;box-shadow:none}}
 @media(prefers-reduced-motion:reduce){.panel{transition:none}}
+
+#admin-login-dialog{
+  width:min(430px,calc(100% - 28px));padding:clamp(21px,5vw,32px);
+  border:1px solid #ffffffed;border-radius:28px;
+  background:linear-gradient(142deg,#eefbfafa,#fffef9f5 64%,#fff5fff0);
+  backdrop-filter:blur(20px);box-shadow:0 18px 75px #19394b36
+}
+#admin-login-dialog::backdrop{background:#22394c54;backdrop-filter:blur(7px)}
+.admin-login-header{position:relative;padding-inline-end:44px;margin-bottom:20px}
+.admin-login-mark{
+  display:grid;place-items:center;width:51px;height:51px;margin-bottom:13px;
+  border:1px solid #b9e5db;border-radius:17px;color:var(--teal-dark);
+  background:linear-gradient(145deg,#e7fcf7,#c9efe6)
+}
+.admin-login-mark svg{width:25px;height:25px}
+.admin-login-header h2{font-size:clamp(1.35rem,5vw,1.7rem);line-height:1.28;letter-spacing:-.02em}
+.admin-login-header .subtitle{font-size:.87rem}
+.admin-login-header .admin-login-close{position:absolute;inset:0 0 auto auto;width:42px;min-height:42px}
+#admin-login-dialog input{min-height:45px;font-size:1rem;background:#ffffffde}
+#admin-login-dialog input:focus{border-color:var(--teal);outline:2px solid #168e8950;outline-offset:2px}
+#admin-login-dialog .actions{margin-top:17px}
+#admin-login-dialog .actions button{width:100%;min-height:45px}
+#admin-login-dialog .actions button:disabled{opacity:.66;cursor:wait}
