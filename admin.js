@@ -144,6 +144,12 @@ function afterAdmin() {
     syncRepairLocation(form);
   }
 }
+function adminQuoteList(current) {
+  if (!current?.quotes.length) return "";
+  return records("แก้ไขใบเสนอราคา",current.quotes,quote => quoteRecord(quote,current.repair_id) +
+    '<button type="button" class="button compact" data-edit-quote="' + esc(quote.quotation_id) + '" data-repair="' + esc(current.repair_id) + '">แก้ไขใบเสนอราคา</button>');
+}
+
 function repairForm(current) {
   const closed = current?.status === "CLOSED";
   const engineers = engineerChoices();
@@ -166,7 +172,7 @@ function repairForm(current) {
     fieldset("ข้อมูล In-House",fields(closed ? inHouseFields.filter(([key]) => key !== "returned_to_customer_at") : inHouseFields,initial),'id="in-house-fields"') +
     (closed ? fieldset("ข้อมูลปิดงาน",fields(closingFields.map(([key,label,type,,choices]) =>
       [key,label,type,key === "repair_completed_at" && Boolean(current.repair_completed_at),choices]),initial)) : '') +
-    formFooter(current ? "บันทึกการแก้ไข" : "บันทึกงานซ่อม") + '</form>';
+    formFooter(current ? "บันทึกการแก้ไข" : "บันทึกงานซ่อม") + '</form>' + adminQuoteList(current);
 }
 function syncRepairModels(form, selected = form.elements.model.value) {
   const brand = form.elements.brand.value;
@@ -244,7 +250,7 @@ function updateForm(current) {
     '<div class="data-actions"><button type="button" class="button" data-action="change-update-job">' + icon("search") + ' ค้นหางานอื่น</button>' +
     '<button type="button" class="button" data-open="' + esc(current.repair_id) + '">ดูรายละเอียดงาน</button>' +
     (current.status === "CLOSED" ? '<button type="button" class="button" data-edit="' + esc(current.repair_id) + '">แก้ไขงานที่ปิดแล้ว</button>' + reopenJobButton(current.repair_id) : '') + '</div></div>';
-  if (current.status === "CLOSED") return start + selected;
+  if (current.status === "CLOSED") return start + selected + adminQuoteList(current);
   const choices = Object.fromEntries(current.visits.map(v => [v.visit_id,date(v.actual_visit_at || v.scheduled_visit_at) + " · " + v.site_location]));
   const reasonChoices = Object.fromEntries(R.reasons.map(reason => [reason,reason]));
   const definitions = {
@@ -265,7 +271,7 @@ function updateForm(current) {
     Object.entries(activityTabs).map(([key,label]) => toggle("activity",key,label,activity === key,"plus")).join("") + '</div><form data-form="activity">' +
     fields(definitions[activity], defaults).replace('name="quoted_amount_thb"', 'name="quoted_amount_thb" step="0.01"').replace('step="0.01" value="" min="1"', 'step="0.01" value="" min="0"') +
     (activity === "quote" ? quoteImageField() : "") +
-    formFooter(activity === "close" ? "ยืนยันปิดงาน" : "บันทึก") + '</form>' + pendingNumbers;
+    formFooter(activity === "close" ? "ยืนยันปิดงาน" : "บันทึก") + '</form>' + pendingNumbers + adminQuoteList(current);
 }
 function settingsForm() {
   return '<header class="section-head"><div><h2>ข้อมูลหลักและตั้งค่า</h2><p>' + (isLiveDatabase() ? "การตั้งค่าใช้กับผู้ใช้ฐานข้อมูลนี้" : "ใช้กับข้อมูลสาธิตในเบราว์เซอร์นี้") + '</p></div></header>' +

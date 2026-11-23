@@ -253,18 +253,11 @@ function saveQuoteNumber(form, values) {
   commit(form,next,"บันทึกเลขใบเสนอราคาแล้ว");
 }
 
-let pendingQuoteEdit = null;
 function openQuoteEdit(repairId, quoteId, field = "quotation_status") {
   const row = findRepair(repairId);
   const quote = row?.quotes.find(item => item.quotation_id === quoteId);
-  if (!quote || (isLiveDatabase() && state.role !== "ADMIN")) return;
-  if (!repairAdminUnlocked()) {
-    pendingQuoteEdit = {repairId,quoteId,field};
-    location.hash = "admin";
-    render();
-    return;
-  }
-  pendingQuoteEdit = null;
+  if (!isAdmin() || !quote || (isLiveDatabase() && state.role !== "ADMIN")) return;
+  if (!repairAdminUnlocked()) return render();
   openDialog("แก้ไขใบเสนอราคา",row.srn + " · " + quotationLabel(quote),
     '<form data-form="quote-edit" data-repair="' + esc(repairId) + '" data-key="' + esc(quoteId) + '" data-updated-at="' + esc(row.updated_at || "") + '">' +
     fields([["quotation_status","สถานะใบเสนอราคา"],["decision_at","วันที่ตัดสินใจ","date"],["rejection_reason","เหตุผลที่ปฏิเสธ","textarea"]],{...quote,decision_at:quote.decision_at ? R.bangkokDay(quote.decision_at) : ""}) +

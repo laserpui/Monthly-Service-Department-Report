@@ -1026,13 +1026,11 @@ function quotationTableRow({ repair, quote }) {
   const number = quotationLabel(quote);
   const copy = copyItemButton("คัดลอก " + (quote ? number : repair.srn),quotationCopyText({repair,quote}),true);
   const amount = quote?.quoted_amount_thb != null && quote.quoted_amount_thb !== "" ? quoteCurrency.format(quote.quoted_amount_thb) : "—";
-  const editable = quote && (!isLiveDatabase() || state.role === "ADMIN");
-  const editField = (value, field, label) => editable ? '<button type="button" class="text-button" data-edit-quote="' + esc(quote.quotation_id) + '" data-repair="' + esc(repair.repair_id) + '" data-field="' + field + '" title="แก้ไข' + label + '" aria-label="แก้ไข' + label + '">' + value + '</button>' : value;
   return '<tr data-open="' + esc(repair.repair_id) + '"><td>' + link + '</td><td>' + esc(state.customers[repair.customer_id]) +
     '</td><td><div class="row-copy">' + esc(number) + copy + '</div></td><td>' + esc(amount) +
-    '</td><td>' + editField(esc(quote?.quotation_status || "—"),"quotation_status","สถานะใบเสนอราคา") + '</td><td>' + badge(state.statuses[repair.status],statusTone(repair.status)) +
-    '</td><td>' + date(quote?.quoted_at) + '</td><td>' + editField(date(quote?.decision_at),"decision_at","วันที่ตัดสินใจ") +
-    '</td><td class="quote-note">' + editField(esc(quote?.rejection_reason || "—"),"rejection_reason","เหตุผลที่ปฏิเสธ") + '</td><td>' + esc(repair.brand + " " + repair.model) +
+    '</td><td>' + esc(quote?.quotation_status || "—") + '</td><td>' + badge(state.statuses[repair.status],statusTone(repair.status)) +
+    '</td><td>' + date(quote?.quoted_at) + '</td><td>' + date(quote?.decision_at) +
+    '</td><td class="quote-note">' + esc(quote?.rejection_reason || "—") + '</td><td>' + esc(repair.brand + " " + repair.model) +
     '</td><td>' + (quoteImageButton(quote,repair.repair_id) || "—") + '</td></tr>';
 }
 
@@ -1215,6 +1213,12 @@ function afterAdmin() {
     syncRepairLocation(form);
   }
 }
+function adminQuoteList(current) {
+  if (!current?.quotes.length) return "";
+  return records("แก้ไขใบเสนอราคา",current.quotes,quote => quoteRecord(quote,current.repair_id) +
+    '<button type="button" class="button compact" data-edit-quote="' + esc(quote.quotation_id) + '" data-repair="' + esc(current.repair_id) + '">แก้ไขใบเสนอราคา</button>');
+}
+
 function repairForm(current) {
   const closed = current?.status === "CLOSED";
   const engineers = engineerChoices();
@@ -1237,7 +1241,7 @@ function repairForm(current) {
     fieldset("ข้อมูล In-House",fields(closed ? inHouseFields.filter(([key]) => key !== "returned_to_customer_at") : inHouseFields,initial),'id="in-house-fields"') +
     (closed ? fieldset("ข้อมูลปิดงาน",fields(closingFields.map(([key,label,type,,choices]) =>
       [key,label,type,key === "repair_completed_at" && Boolean(current.repair_completed_at),choices]),initial)) : '') +
-    formFooter(current ? "บันทึกการแก้ไข" : "บันทึกงานซ่อม") + '</form>';
+    formFooter(current ? "บันทึกการแก้ไข" : "บันทึกงานซ่อม") + '</form>' + adminQuoteList(current);
 }
 function syncRepairModels(form, selected = form.elements.model.value) {
   const brand = form.elements.brand.value;
@@ -1315,7 +1319,7 @@ function updateForm(current) {
     '<div class="data-actions"><button type="button" class="button" data-action="change-update-job">' + icon("search") + ' ค้นหางานอื่น</button>' +
     '<button type="button" class="button" data-open="' + esc(current.repair_id) + '">ดูรายละเอียดงาน</button>' +
     (current.status === "CLOSED" ? '<button type="button" class="button" data-edit="' + esc(current.repair_id) + '">แก้ไขงานที่ปิดแล้ว</button>' + reopenJobButton(current.repair_id) : '') + '</div></div>';
-  if (current.status === "CLOSED") return start + selected;
+  if (current.status === "CLOSED") return start + selected + adminQuoteList(current);
   const choices = Object.fromEntries(current.visits.map(v => [v.visit_id,date(v.actual_visit_at || v.scheduled_visit_at) + " · " + v.site_location]));
   const reasonChoices = Object.fromEntries(R.reasons.map(reason => [reason,reason]));
   const definitions = {
@@ -1336,7 +1340,7 @@ function updateForm(current) {
     Object.entries(activityTabs).map(([key,label]) => toggle("activity",key,label,activity === key,"plus")).join("") + '</div><form data-form="activity">' +
     fields(definitions[activity], defaults).replace('name="quoted_amount_thb"', 'name="quoted_amount_thb" step="0.01"').replace('step="0.01" value="" min="1"', 'step="0.01" value="" min="0"') +
     (activity === "quote" ? quoteImageField() : "") +
-    formFooter(activity === "close" ? "ยืนยันปิดงาน" : "บันทึก") + '</form>' + pendingNumbers;
+    formFooter(activity === "close" ? "ยืนยันปิดงาน" : "บันทึก") + '</form>' + pendingNumbers + adminQuoteList(current);
 }
 function settingsForm() {
   return '<header class="section-head"><div><h2>ข้อมูลหลักและตั้งค่า</h2><p>' + (isLiveDatabase() ? "การตั้งค่าใช้กับผู้ใช้ฐานข้อมูลนี้" : "ใช้กับข้อมูลสาธิตในเบราว์เซอร์นี้") + '</p></div></header>' +
@@ -1724,10 +1728,6 @@ async function submitRepairAdminLogin(form,password) {
     repairAdminSession = session;
     modal.close();
     render();
-    if (pendingQuoteEdit) {
-      const {repairId,quoteId,field} = pendingQuoteEdit;
-      openQuoteEdit(repairId,quoteId,field);
-    }
   } catch (failure) {
     error.textContent = failure.message || "เข้าสู่ Admin ไม่สำเร็จ";
     error.hidden = false;
@@ -2083,18 +2083,11 @@ function saveQuoteNumber(form, values) {
   commit(form,next,"บันทึกเลขใบเสนอราคาแล้ว");
 }
 
-let pendingQuoteEdit = null;
 function openQuoteEdit(repairId, quoteId, field = "quotation_status") {
   const row = findRepair(repairId);
   const quote = row?.quotes.find(item => item.quotation_id === quoteId);
-  if (!quote || (isLiveDatabase() && state.role !== "ADMIN")) return;
-  if (!repairAdminUnlocked()) {
-    pendingQuoteEdit = {repairId,quoteId,field};
-    location.hash = "admin";
-    render();
-    return;
-  }
-  pendingQuoteEdit = null;
+  if (!isAdmin() || !quote || (isLiveDatabase() && state.role !== "ADMIN")) return;
+  if (!repairAdminUnlocked()) return render();
   openDialog("แก้ไขใบเสนอราคา",row.srn + " · " + quotationLabel(quote),
     '<form data-form="quote-edit" data-repair="' + esc(repairId) + '" data-key="' + esc(quoteId) + '" data-updated-at="' + esc(row.updated_at || "") + '">' +
     fields([["quotation_status","สถานะใบเสนอราคา"],["decision_at","วันที่ตัดสินใจ","date"],["rejection_reason","เหตุผลที่ปฏิเสธ","textarea"]],{...quote,decision_at:quote.decision_at ? R.bangkokDay(quote.decision_at) : ""}) +

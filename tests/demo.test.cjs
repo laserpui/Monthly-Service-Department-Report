@@ -1212,11 +1212,14 @@ test("quotation edits update the same quote on a closed job and preserve its ima
   assert.equal(state.repairs[0].quotes[0].rejection_reason,"");
 });
 
-test("quotation table exposes each editable field and demo saves only the targeted quotation", () => {
+test("quotation table is read only while Admin edits the targeted quotation", () => {
   const {run}=openDemo();
   run('const job=state.repairs[0]; job.quotes=[{quotation_id:"EDIT-Q",quotation_number:"Q1",quoted_amount_thb:100,repair_id:job.repair_id}]; const original=JSON.stringify(job.quotes); const q=job.quotes[0];');
   const markup=run('quotationTableRow({repair:job,quote:q})');
-  for (const field of ["quotation_status","decision_at","rejection_reason"]) assert.ok(markup.includes('data-field="'+field+'"'));
+  assert.doesNotMatch(markup,/data-edit-quote|data-field=/);
+  assert.match(run('adminQuoteList(job)'),/data-edit-quote="EDIT-Q"/);
+  assert.match(run('repairForm(job)'),/data-edit-quote="EDIT-Q"/);
+  assert.match(run('updateForm({...job,status:"CLOSED"})'),/data-edit-quote="EDIT-Q"/);
   run('saveQuoteEdit({dataset:{repair:job.repair_id,key:q.quotation_id,updatedAt:job.updated_at || ""}},{quotation_status:"อนุมัติ",decision_at:"2026-11-19",rejection_reason:""})');
   assert.equal(run('findRepair(job.repair_id).quotes[0].quotation_status'),"อนุมัติ");
   assert.equal(run('findRepair(job.repair_id).quotes.length === JSON.parse(original).length'),true);

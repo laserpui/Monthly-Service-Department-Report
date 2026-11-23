@@ -231,13 +231,11 @@ function quotationTableRow({ repair, quote }) {
   const number = quotationLabel(quote);
   const copy = copyItemButton("คัดลอก " + (quote ? number : repair.srn),quotationCopyText({repair,quote}),true);
   const amount = quote?.quoted_amount_thb != null && quote.quoted_amount_thb !== "" ? quoteCurrency.format(quote.quoted_amount_thb) : "—";
-  const editable = quote && (!isLiveDatabase() || state.role === "ADMIN");
-  const editField = (value, field, label) => editable ? '<button type="button" class="text-button" data-edit-quote="' + esc(quote.quotation_id) + '" data-repair="' + esc(repair.repair_id) + '" data-field="' + field + '" title="แก้ไข' + label + '" aria-label="แก้ไข' + label + '">' + value + '</button>' : value;
   return '<tr data-open="' + esc(repair.repair_id) + '"><td>' + link + '</td><td>' + esc(state.customers[repair.customer_id]) +
     '</td><td><div class="row-copy">' + esc(number) + copy + '</div></td><td>' + esc(amount) +
-    '</td><td>' + editField(esc(quote?.quotation_status || "—"),"quotation_status","สถานะใบเสนอราคา") + '</td><td>' + badge(state.statuses[repair.status],statusTone(repair.status)) +
-    '</td><td>' + date(quote?.quoted_at) + '</td><td>' + editField(date(quote?.decision_at),"decision_at","วันที่ตัดสินใจ") +
-    '</td><td class="quote-note">' + editField(esc(quote?.rejection_reason || "—"),"rejection_reason","เหตุผลที่ปฏิเสธ") + '</td><td>' + esc(repair.brand + " " + repair.model) +
+    '</td><td>' + esc(quote?.quotation_status || "—") + '</td><td>' + badge(state.statuses[repair.status],statusTone(repair.status)) +
+    '</td><td>' + date(quote?.quoted_at) + '</td><td>' + date(quote?.decision_at) +
+    '</td><td class="quote-note">' + esc(quote?.rejection_reason || "—") + '</td><td>' + esc(repair.brand + " " + repair.model) +
     '</td><td>' + (quoteImageButton(quote,repair.repair_id) || "—") + '</td></tr>';
 }
 

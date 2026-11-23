@@ -139,10 +139,6 @@ async function submitRepairAdminLogin(form,password) {
     repairAdminSession = session;
     modal.close();
     render();
-    if (pendingQuoteEdit) {
-      const {repairId,quoteId,field} = pendingQuoteEdit;
-      openQuoteEdit(repairId,quoteId,field);
-    }
   } catch (failure) {
     error.textContent = failure.message || "เข้าสู่ Admin ไม่สำเร็จ";
     error.hidden = false;
