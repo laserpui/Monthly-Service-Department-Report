@@ -266,6 +266,83 @@ td .quote-image-trigger{margin-top:0}
 }
 @media(min-width:721px){.sidebar nav{overflow-y:auto}.side-footer{flex-shrink:0}}
 
+/* Keep the repair identifier in view when wide tables scroll. */
+@media(max-width:900px){
+  :is(#table-output,.admin-panel) .table-scroll{margin-inline:0;border:1px solid var(--line);border-radius:12px}
+  :is(#table-output,.admin-panel) .table-scroll :is(th,td):first-child:not([colspan]){
+    position:sticky;inset-inline-start:0;z-index:1;background:#f6fbfa;
+    box-shadow:1px 0 #dce6eb;
+  }
+  :is(#table-output,.admin-panel) .table-scroll th:first-child:not([colspan]){background:#edf5f7}
+}
+.search:focus-within{box-shadow:0 0 0 3px #087a7620}
+.panel{transition:border-color .18s,box-shadow .18s}
+.metric:focus-visible,.case:focus-visible{border-color:#87c7bd}
+dialog{
+  background:#f8fcfcee;backdrop-filter:blur(20px);
+  overscroll-behavior:contain;scroll-padding-block-start:5.5rem
+}
+.dialog-head{background:#f8fcfcf5;backdrop-filter:blur(16px);align-items:flex-start}
+.dialog-head>div{min-width:0;overflow-wrap:anywhere}
+.dialog-head .icon-button{flex:none}
+@media(max-width:720px){
+  .topbar{height:auto;min-height:49px;gap:6px 10px;flex-wrap:wrap;padding-block:6px}
+  .breadcrumb{min-width:0;gap:7px}
+  .breadcrumb strong{overflow-wrap:anywhere}
+  .sidebar nav a,.sidebar .repair-links a{min-height:39px}
+  .repair-filter-layout{gap:12px}
+  .repair-filter-layout .repair-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .repair-filter-layout .repair-toolbar .grow{grid-column:1/-1;max-width:none}
+  .repair-filter-layout .repair-toolbar select{width:100%;text-overflow:ellipsis}
+  .repair-date-filter{position:relative;padding-top:8px}
+  .repair-date-filter legend{padding-inline-end:72px}
+  .repair-date-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .repair-date-fields .field{max-width:none}
+  .repair-date-fields input[type=date]{width:100%;padding-inline:7px}
+  .repair-date-fields .filter-reset{position:absolute;inset:0 0 auto auto}
+  .segment button{min-height:39px}
+  .search input,.field :is(input,select,textarea){font-size:1rem}
+  .field input[type=date]{font-size:.87rem;min-height:41px}
+  .admin-nav{width:100%}
+  .admin-nav button{flex:1 1 auto}
+  .dialog-head{padding:13px 14px}
+  #dialog-body{padding:14px}
+  .dialog-head .icon-button{width:42px;min-height:42px}
+}
+@media(max-width:480px){
+  .repair-filter-layout .repair-toolbar{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:370px){
+  .detail-meta{grid-template-columns:1fr}
+  .repair-filter-layout .repair-toolbar select{padding-inline-start:7px}
+}
+@media(max-width:720px) and (max-height:520px){.sidebar{position:relative}}
+@media(hover:none){.metric:hover,.case:hover{transform:none;box-shadow:none}}
+@media(prefers-reduced-motion:reduce){.panel{transition:none}}
+
+#admin-login-dialog{
+  width:min(430px,calc(100% - 28px));padding:clamp(21px,5vw,32px);
+  border:1px solid #ffffffed;border-radius:28px;
+  background:linear-gradient(142deg,#eefbfafa,#fffef9f5 64%,#fff5fff0);
+  backdrop-filter:blur(20px);box-shadow:0 18px 75px #19394b36
+}
+#admin-login-dialog::backdrop{background:#22394c54;backdrop-filter:blur(7px)}
+.admin-login-header{position:relative;padding-inline-end:44px;margin-bottom:20px}
+.admin-login-mark{
+  display:grid;place-items:center;width:51px;height:51px;margin-bottom:13px;
+  border:1px solid #b9e5db;border-radius:17px;color:var(--teal-dark);
+  background:linear-gradient(145deg,#e7fcf7,#c9efe6)
+}
+.admin-login-mark svg{width:25px;height:25px}
+.admin-login-header h2{font-size:clamp(1.35rem,5vw,1.7rem);line-height:1.28;letter-spacing:-.02em}
+.admin-login-header .subtitle{font-size:.87rem}
+.admin-login-header .admin-login-close{position:absolute;inset:0 0 auto auto;width:42px;min-height:42px}
+#admin-login-dialog input{min-height:45px;font-size:1rem;background:#ffffffde}
+#admin-login-dialog input:focus{border-color:var(--teal);outline:2px solid #168e8950;outline-offset:2px}
+#admin-login-dialog .actions{margin-top:17px}
+#admin-login-dialog .actions button{width:100%;min-height:45px}
+#admin-login-dialog .actions button:disabled{opacity:.66;cursor:wait}
+
 </style>
 </head>
 <body data-live-database="true">
@@ -456,6 +533,7 @@ const app = document.querySelector("#app");
 const dialog = document.querySelector("#dialog");
 const dialogBody = document.querySelector("#dialog-body");
 const paths = {
+  lock:'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4m-4 4v2"/>',
   box:'<path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Zm0 9 8-4.5M12 12 4 7.5M12 12v9M8 5.25l8 4.5"/>',
   wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-7 7a2.1 2.1 0 0 1-3-3l7-7a6 6 0 0 1 7.9-7.9z"/>',
   layout:'<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
@@ -552,8 +630,7 @@ function render() {
   if (module) return showPortalModule(route, module, portal);
   if (isLiveDatabase() && !state) return showLiveDatabaseStatus();
   if (isAdmin() && canUseAdmin && !repairAdminUnlocked()) {
-    app.innerHTML = repairAdminLogin();
-    return;
+    return showRepairAdminLogin();
   }
   app.innerHTML = isAdmin() ? (canUseAdmin ? admin() : '<section class="panel"><h1>บัญชีนี้มีสิทธิ์ดูข้อมูล</h1><p class="subtitle">การเปิดงานและบันทึกข้อมูลต้องใช้บัญชีที่ได้รับสิทธิ์ Admin</p></section>') : section ? repairIndex(section) : dashboard();
   if (isAdmin() && canUseAdmin) afterAdmin();
@@ -949,11 +1026,13 @@ function quotationTableRow({ repair, quote }) {
   const number = quotationLabel(quote);
   const copy = copyItemButton("คัดลอก " + (quote ? number : repair.srn),quotationCopyText({repair,quote}),true);
   const amount = quote?.quoted_amount_thb != null && quote.quoted_amount_thb !== "" ? quoteCurrency.format(quote.quoted_amount_thb) : "—";
+  const editable = quote && (!isLiveDatabase() || state.role === "ADMIN");
+  const editField = (value, field, label) => editable ? '<button type="button" class="text-button" data-edit-quote="' + esc(quote.quotation_id) + '" data-repair="' + esc(repair.repair_id) + '" data-field="' + field + '" title="แก้ไข' + label + '" aria-label="แก้ไข' + label + '">' + value + ' ' + icon("edit") + '</button>' : value;
   return '<tr data-open="' + esc(repair.repair_id) + '"><td>' + link + '</td><td>' + esc(state.customers[repair.customer_id]) +
     '</td><td><div class="row-copy">' + esc(number) + copy + '</div></td><td>' + esc(amount) +
-    '</td><td>' + esc(quote?.quotation_status || "—") + '</td><td>' + badge(state.statuses[repair.status],statusTone(repair.status)) +
-    '</td><td>' + date(quote?.quoted_at) + '</td><td>' + date(quote?.decision_at) +
-    '</td><td class="quote-note">' + esc(quote?.rejection_reason || "—") + '</td><td>' + esc(repair.brand + " " + repair.model) +
+    '</td><td>' + editField(esc(quote?.quotation_status || "—"),"quotation_status","สถานะใบเสนอราคา") + '</td><td>' + badge(state.statuses[repair.status],statusTone(repair.status)) +
+    '</td><td>' + date(quote?.quoted_at) + '</td><td>' + editField(date(quote?.decision_at),"decision_at","วันที่ตัดสินใจ") +
+    '</td><td class="quote-note">' + editField(esc(quote?.rejection_reason || "—"),"rejection_reason","เหตุผลที่ปฏิเสธ") + '</td><td>' + esc(repair.brand + " " + repair.model) +
     '</td><td>' + (quoteImageButton(quote,repair.repair_id) || "—") + '</td></tr>';
 }
 
@@ -1615,11 +1694,22 @@ function repairAdminUnlocked() {
   return !isLiveDatabase() || Boolean(repairAdminSession?.expiresAt > Date.now());
 }
 
-function repairAdminLogin() {
-  return '<section class="panel live-status"><h1>เข้าสู่ Admin</h1>' +
+function showRepairAdminLogin() {
+  if (document.querySelector("#admin-login-dialog")?.open) return;
+  app.innerHTML = '<dialog id="admin-login-dialog" aria-labelledby="admin-login-title" aria-describedby="admin-login-description">' +
+    '<div class="admin-login-header"><span class="admin-login-mark">' + icon("lock") + '</span>' +
+    '<button class="icon-button admin-login-close" type="button" aria-label="ปิด">' + icon("x") + '</button>' +
+    '<h2 id="admin-login-title">เข้าสู่ Admin</h2>' +
+    '<p id="admin-login-description" class="subtitle">กรอกรหัสเพื่อจัดการและบันทึกงานซ่อม</p></div>' +
     '<form data-form="admin-login"><label class="field"><span>รหัส Admin</span>' +
-    '<input type="password" name="password" autocomplete="current-password" required></label>' +
-    formFooter("เข้าสู่ระบบ") + '</form></section>';
+    '<input type="password" name="password" autocomplete="current-password" required autofocus></label>' +
+    formFooter("เข้าสู่ระบบ") + '</form></dialog>';
+  const modal = document.querySelector("#admin-login-dialog");
+  document.querySelector(".admin-login-close").onclick = () => modal.close();
+  modal.onclose = () => {
+    if (modal.isConnected && isAdmin() && !repairAdminUnlocked()) location.hash = "dashboard";
+  };
+  modal.showModal();
 }
 
 async function submitRepairAdminLogin(form,password) {
@@ -1628,8 +1718,16 @@ async function submitRepairAdminLogin(form,password) {
   button.disabled = true;
   error.hidden = true;
   try {
-    repairAdminSession = await callRepairServer("unlockRepairAdmin",password);
-    if (isAdmin()) render();
+    const session = await callRepairServer("unlockRepairAdmin",password);
+    const modal = document.querySelector("#admin-login-dialog");
+    if (!form.isConnected || !modal?.open || !isAdmin()) return;
+    repairAdminSession = session;
+    modal.close();
+    render();
+    if (pendingQuoteEdit) {
+      const {repairId,quoteId,field} = pendingQuoteEdit;
+      openQuoteEdit(repairId,quoteId,field);
+    }
   } catch (failure) {
     error.textContent = failure.message || "เข้าสู่ Admin ไม่สำเร็จ";
     error.hidden = false;
@@ -1685,7 +1783,7 @@ async function saveLiveForm(form, values) {
   const kind = form.dataset.form;
   const operation = kind === "repair" ? (adminTab === "edit" ? "edit" : "create") : kind === "activity" ? activity : kind;
   const repairId = operation === "edit" || kind === "activity" ? selectedId : form.dataset.repair || "";
-  const updatedAt = kind === "reopen" ? form.dataset.updatedAt : findRepair(repairId)?.updated_at || "";
+  const updatedAt = ["reopen","quote-edit"].includes(kind) ? form.dataset.updatedAt : findRepair(repairId)?.updated_at || "";
   const quoteId = form.dataset.key || "";
   const fingerprint = JSON.stringify([operation,repairId,updatedAt,quoteId,values]);
   let request = liveRequests.get(form);
@@ -1985,6 +2083,41 @@ function saveQuoteNumber(form, values) {
   commit(form,next,"บันทึกเลขใบเสนอราคาแล้ว");
 }
 
+let pendingQuoteEdit = null;
+function openQuoteEdit(repairId, quoteId, field = "quotation_status") {
+  const row = findRepair(repairId);
+  const quote = row?.quotes.find(item => item.quotation_id === quoteId);
+  if (!quote || (isLiveDatabase() && state.role !== "ADMIN")) return;
+  if (!repairAdminUnlocked()) {
+    pendingQuoteEdit = {repairId,quoteId,field};
+    location.hash = "admin";
+    render();
+    return;
+  }
+  pendingQuoteEdit = null;
+  openDialog("แก้ไขใบเสนอราคา",row.srn + " · " + quotationLabel(quote),
+    '<form data-form="quote-edit" data-repair="' + esc(repairId) + '" data-key="' + esc(quoteId) + '" data-updated-at="' + esc(row.updated_at || "") + '">' +
+    fields([["quotation_status","สถานะใบเสนอราคา"],["decision_at","วันที่ตัดสินใจ","date"],["rejection_reason","เหตุผลที่ปฏิเสธ","textarea"]],{...quote,decision_at:quote.decision_at ? R.bangkokDay(quote.decision_at) : ""}) +
+    '<p class="error" role="alert" hidden></p><div class="actions"><button type="button" class="button" data-action="cancel-quote-edit">ยกเลิก</button><button type="submit" class="button primary">บันทึกการแก้ไข</button></div></form>');
+  if (["quotation_status","decision_at","rejection_reason"].includes(field)) dialog.querySelector('[name="' + field + '"]')?.focus();
+}
+function saveQuoteEdit(form, values) {
+  const next = copyState();
+  const row = next.repairs.find(item => item.repair_id === form.dataset.repair);
+  const quote = row?.quotes.find(item => item.quotation_id === form.dataset.key);
+  requireRule(quote,"ไม่พบใบเสนอราคา");
+  requireRule((row.updated_at || "") === form.dataset.updatedAt,"มีการแก้ไขงานนี้ กรุณาเปิดฟอร์มใหม่ก่อนบันทึก");
+  const keys = ["quotation_status","decision_at","rejection_reason"];
+  const changes = Object.fromEntries(keys.map(key => [key,String(values[key] || "").trim()]));
+  requireRule(!changes.decision_at || (/^\d{4}-\d{2}-\d{2}$/.test(changes.decision_at) && !Number.isNaN(Date.parse(changes.decision_at)) && new Date(changes.decision_at).toISOString().slice(0,10) === changes.decision_at),"วันที่ตัดสินใจไม่ถูกต้อง");
+  const old = Object.fromEntries(keys.map(key => [key,quote[key] || ""]));
+  const entry = R.history("แก้ไขใบเสนอราคา",quotationLabel(quote),JSON.stringify(old),JSON.stringify(changes));
+  Object.assign(quote,changes);
+  row.history.push(entry);
+  row.updated_at = entry.occurred_at;
+  commit(form,next,"บันทึกการแก้ไขใบเสนอราคาแล้ว");
+}
+
 function saveSettings(form, values) {
   const next = copyState();
   if (form.dataset.form === "thresholds") {
@@ -2021,6 +2154,8 @@ document.addEventListener("click", event => {
     const content = target.closest(".copyable-item").querySelector(".copy-content");
     return copyText((content.querySelector(".record-text") || content).innerText);
   }
+  if (action.editQuote) return openQuoteEdit(action.repair,action.editQuote,action.field);
+  if (action.action === "cancel-quote-edit") return dialog.close();
   if (action.fillQuoteNumber) return openQuoteNumber(action.repair,action.fillQuoteNumber);
   if (action.quoteImage) return openQuoteImage(action.key,action.quoteImage);
   if (action.uploadQuote) return uploadQuoteToDrive(action.repair,action.uploadQuote);
@@ -2159,6 +2294,7 @@ document.addEventListener("submit", event => {
     if (isLiveDatabase()) return saveLiveForm(form,values);
     if (form.dataset.form === "repair") saveRepair(form,values);
     else if (form.dataset.form === "reopen") saveReopenedRepair(form,values);
+    else if (form.dataset.form === "quote-edit") saveQuoteEdit(form,values);
     else if (form.dataset.form === "quote-number") saveQuoteNumber(form,values);
     else if (form.dataset.form === "activity") {
       const savedQuote = saveActivity(form,values);

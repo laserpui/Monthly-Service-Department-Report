@@ -253,6 +253,41 @@ function saveQuoteNumber(form, values) {
   commit(form,next,"บันทึกเลขใบเสนอราคาแล้ว");
 }
 
+let pendingQuoteEdit = null;
+function openQuoteEdit(repairId, quoteId, field = "quotation_status") {
+  const row = findRepair(repairId);
+  const quote = row?.quotes.find(item => item.quotation_id === quoteId);
+  if (!quote || (isLiveDatabase() && state.role !== "ADMIN")) return;
+  if (!repairAdminUnlocked()) {
+    pendingQuoteEdit = {repairId,quoteId,field};
+    location.hash = "admin";
+    render();
+    return;
+  }
+  pendingQuoteEdit = null;
+  openDialog("แก้ไขใบเสนอราคา",row.srn + " · " + quotationLabel(quote),
+    '<form data-form="quote-edit" data-repair="' + esc(repairId) + '" data-key="' + esc(quoteId) + '" data-updated-at="' + esc(row.updated_at || "") + '">' +
+    fields([["quotation_status","สถานะใบเสนอราคา"],["decision_at","วันที่ตัดสินใจ","date"],["rejection_reason","เหตุผลที่ปฏิเสธ","textarea"]],{...quote,decision_at:quote.decision_at ? R.bangkokDay(quote.decision_at) : ""}) +
+    '<p class="error" role="alert" hidden></p><div class="actions"><button type="button" class="button" data-action="cancel-quote-edit">ยกเลิก</button><button type="submit" class="button primary">บันทึกการแก้ไข</button></div></form>');
+  if (["quotation_status","decision_at","rejection_reason"].includes(field)) dialog.querySelector('[name="' + field + '"]')?.focus();
+}
+function saveQuoteEdit(form, values) {
+  const next = copyState();
+  const row = next.repairs.find(item => item.repair_id === form.dataset.repair);
+  const quote = row?.quotes.find(item => item.quotation_id === form.dataset.key);
+  requireRule(quote,"ไม่พบใบเสนอราคา");
+  requireRule((row.updated_at || "") === form.dataset.updatedAt,"มีการแก้ไขงานนี้ กรุณาเปิดฟอร์มใหม่ก่อนบันทึก");
+  const keys = ["quotation_status","decision_at","rejection_reason"];
+  const changes = Object.fromEntries(keys.map(key => [key,String(values[key] || "").trim()]));
+  requireRule(!changes.decision_at || (/^\d{4}-\d{2}-\d{2}$/.test(changes.decision_at) && !Number.isNaN(Date.parse(changes.decision_at)) && new Date(changes.decision_at).toISOString().slice(0,10) === changes.decision_at),"วันที่ตัดสินใจไม่ถูกต้อง");
+  const old = Object.fromEntries(keys.map(key => [key,quote[key] || ""]));
+  const entry = R.history("แก้ไขใบเสนอราคา",quotationLabel(quote),JSON.stringify(old),JSON.stringify(changes));
+  Object.assign(quote,changes);
+  row.history.push(entry);
+  row.updated_at = entry.occurred_at;
+  commit(form,next,"บันทึกการแก้ไขใบเสนอราคาแล้ว");
+}
+
 function saveSettings(form, values) {
   const next = copyState();
   if (form.dataset.form === "thresholds") {
@@ -289,6 +324,8 @@ document.addEventListener("click", event => {
     const content = target.closest(".copyable-item").querySelector(".copy-content");
     return copyText((content.querySelector(".record-text") || content).innerText);
   }
+  if (action.editQuote) return openQuoteEdit(action.repair,action.editQuote,action.field);
+  if (action.action === "cancel-quote-edit") return dialog.close();
   if (action.fillQuoteNumber) return openQuoteNumber(action.repair,action.fillQuoteNumber);
   if (action.quoteImage) return openQuoteImage(action.key,action.quoteImage);
   if (action.uploadQuote) return uploadQuoteToDrive(action.repair,action.uploadQuote);
@@ -427,6 +464,7 @@ document.addEventListener("submit", event => {
     if (isLiveDatabase()) return saveLiveForm(form,values);
     if (form.dataset.form === "repair") saveRepair(form,values);
     else if (form.dataset.form === "reopen") saveReopenedRepair(form,values);
+    else if (form.dataset.form === "quote-edit") saveQuoteEdit(form,values);
     else if (form.dataset.form === "quote-number") saveQuoteNumber(form,values);
     else if (form.dataset.form === "activity") {
       const savedQuote = saveActivity(form,values);

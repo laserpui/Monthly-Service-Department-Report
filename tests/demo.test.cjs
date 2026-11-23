@@ -1181,3 +1181,44 @@ test("repair writes require an Admin session and wrong passwords are rate limite
   for (let i=0;i<5;i++) assert.throws(()=>context.unlockRepairAdmin("wrong-test-password"),/รหัส Admin ไม่ถูกต้อง/);
   assert.throws(()=>context.unlockRepairAdmin("test-only-password"),/ลองใหม่ใน 5 นาที/);
 });
+
+
+test("quotation edits update the same quote on a closed job and preserve its image with an audit", () => {
+  const {save} = openSheetBackend();
+  let state = save("create",{srn:"EDIT-QUOTE",reported_at:"2026-11-18",customer_name:"Test",brand:"Fotona",model:"SP Dynamis",initial_service_type:"IN_HOUSE",current_location_type:"IN_HOUSE",issue_description:"test",priority:"MEDIUM",status:"PENDING_INSPECTION"});
+  const repairId=state.repairs[0].repair_id;
+  const target=()=>({repairId,updatedAt:state.repairs[0].updated_at});
+  state=save("quote",{quotation_number:"Q1",quoted_amount_thb:"100",image_data_url:"data:image/png;base64,iVBORw0KGgo="},target());
+  const original=state.repairs[0].quotes[0];
+  state=save("close",{repair_completed_at:"2026-11-18",test_result:"PASS",final_outcome:"สำเร็จ",close_note:"done"},target());
+  const values={quotation_status:"ปฏิเสธ",decision_at:"2026-11-19",rejection_reason:"เกินงบประมาณ"};
+  const request={...target(),quoteId:original.quotation_id,requestId:"edit-quote-request"};
+  assert.throws(()=>save("quote-edit",values,{...request,updatedAt:"stale"}),/อีกหน้าจอ/);
+  assert.throws(()=>save("quote-edit",values,{...request,quoteId:"missing"}),/ไม่พบใบเสนอราคา/);
+  assert.throws(()=>save("quote-edit",{...values,decision_at:"2026-02-30"},request),/วันที่/);
+  state=save("quote-edit",values,request);
+  const job=state.repairs[0], quote=job.quotes[0];
+  assert.equal(job.status,"CLOSED");
+  assert.equal(job.quotes.length,1);
+  assert.equal(quote.quotation_id,original.quotation_id);
+  assert.equal(quote.quotation_number,"Q1");
+  assert.equal(quote.quoted_amount_thb,original.quoted_amount_thb);
+  assert.deepEqual(quote.image_drive,original.image_drive);
+  for (const key of Object.keys(values)) assert.equal(quote[key],values[key]);
+  assert.equal(job.history.at(-1).event_type,"แก้ไขใบเสนอราคา");
+  assert.equal(JSON.parse(job.history.at(-1).new_value).rejection_reason,values.rejection_reason);
+  assert.equal(save("quote-edit",values,request).repairs[0].history.length,job.history.length);
+  state=save("quote-edit",{quotation_status:"อนุมัติ",decision_at:"",rejection_reason:""},{...target(),quoteId:quote.quotation_id});
+  assert.equal(state.repairs[0].quotes[0].rejection_reason,"");
+});
+
+test("quotation table exposes each editable field and demo saves only the targeted quotation", () => {
+  const {run}=openDemo();
+  run('const job=state.repairs[0]; job.quotes=[{quotation_id:"EDIT-Q",quotation_number:"Q1",quoted_amount_thb:100,repair_id:job.repair_id}]; const original=JSON.stringify(job.quotes); const q=job.quotes[0];');
+  const markup=run('quotationTableRow({repair:job,quote:q})');
+  for (const field of ["quotation_status","decision_at","rejection_reason"]) assert.ok(markup.includes('data-field="'+field+'"'));
+  run('saveQuoteEdit({dataset:{repair:job.repair_id,key:q.quotation_id,updatedAt:job.updated_at || ""}},{quotation_status:"อนุมัติ",decision_at:"2026-11-19",rejection_reason:""})');
+  assert.equal(run('findRepair(job.repair_id).quotes[0].quotation_status'),"อนุมัติ");
+  assert.equal(run('findRepair(job.repair_id).quotes.length === JSON.parse(original).length'),true);
+  assert.equal(run('findRepair(job.repair_id).quotes[0].quotation_id === q.quotation_id'),true);
+});

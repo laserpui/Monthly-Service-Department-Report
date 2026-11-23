@@ -22,7 +22,7 @@ function saveRepairDatabase(request) {
     let affectedRepairId = request.repairId || '';
     if (op === 'create') {
       affectedRepairId = saveRepairRecord_(ctx,values,null);
-    } else if (['edit','progress','visit','attempt','transfer','quote','quote-number','close','reopen'].includes(op)) {
+    } else if (['edit','progress','visit','attempt','transfer','quote','quote-number','quote-edit','close','reopen'].includes(op)) {
       const row = db.Repair_Master.rows.find(item => item.repair_id === request.repairId);
       repairCheck_(row,'ไม่พบงานซ่อม');
       repairCheck_(String(row.updated_at || '') === String(request.updatedAt || ''),'มีการแก้ไขงานนี้จากอีกหน้าจอ กรุณาโหลดข้อมูลใหม่ก่อนบันทึก');
@@ -208,7 +208,7 @@ function reopenRepairRecord_(ctx,values,row) {
 function saveRepairActivity_(ctx,op,row,values,request) {
   const {db,writes,now,email} = ctx;
   const id = row.repair_id;
-  repairCheck_(row.status !== 'CLOSED','งานนี้ปิดแล้ว');
+  repairCheck_(row.status !== 'CLOSED' || op === 'quote-edit','งานนี้ปิดแล้ว');
   const changes = {updated_at:now,updated_by:email};
   const created = {repair_id:id,created_at:now,created_by:email};
   if (op === 'progress') {
@@ -266,6 +266,14 @@ function saveRepairActivity_(ctx,op,row,values,request) {
     }
     repairAppend_(writes,db.Quotations,nextQuote);
     repairHistory_(ctx,id,'เพิ่มใบเสนอราคา',number || 'ยังไม่ระบุเลขใบเสนอราคา');
+  } else if (op === 'quote-edit') {
+    const quote = db.Quotations.rows.find(item => item.quotation_id === request.quoteId && item.repair_id === id);
+    repairCheck_(quote,'ไม่พบใบเสนอราคาในงานนี้');
+    const fields = ['quotation_status','decision_at','rejection_reason'];
+    const previous = Object.fromEntries(fields.map(key => [key,quote[key] || '']));
+    const updated = {quotation_status:repairText_(values,'quotation_status'),decision_at:repairDay_(values,'decision_at'),rejection_reason:repairText_(values,'rejection_reason')};
+    repairUpdate_(writes,db.Quotations,quote,{...updated,updated_at:now,updated_by:email});
+    repairHistory_(ctx,id,'แก้ไขใบเสนอราคา',quote.quotation_number || 'ยังไม่ระบุเลขใบเสนอราคา',JSON.stringify(previous),JSON.stringify(updated));
   } else if (op === 'quote-number') {
     const quote = db.Quotations.rows.find(item => item.quotation_id === request.quoteId && item.repair_id === id);
     repairCheck_(quote && !quote.quotation_number,'ไม่พบใบเสนอราคาที่ยังรอเลข');

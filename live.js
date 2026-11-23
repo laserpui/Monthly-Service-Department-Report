@@ -139,6 +139,10 @@ async function submitRepairAdminLogin(form,password) {
     repairAdminSession = session;
     modal.close();
     render();
+    if (pendingQuoteEdit) {
+      const {repairId,quoteId,field} = pendingQuoteEdit;
+      openQuoteEdit(repairId,quoteId,field);
+    }
   } catch (failure) {
     error.textContent = failure.message || "เข้าสู่ Admin ไม่สำเร็จ";
     error.hidden = false;
@@ -194,7 +198,7 @@ async function saveLiveForm(form, values) {
   const kind = form.dataset.form;
   const operation = kind === "repair" ? (adminTab === "edit" ? "edit" : "create") : kind === "activity" ? activity : kind;
   const repairId = operation === "edit" || kind === "activity" ? selectedId : form.dataset.repair || "";
-  const updatedAt = kind === "reopen" ? form.dataset.updatedAt : findRepair(repairId)?.updated_at || "";
+  const updatedAt = ["reopen","quote-edit"].includes(kind) ? form.dataset.updatedAt : findRepair(repairId)?.updated_at || "";
   const quoteId = form.dataset.key || "";
   const fingerprint = JSON.stringify([operation,repairId,updatedAt,quoteId,values]);
   let request = liveRequests.get(form);
